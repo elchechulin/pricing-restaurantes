@@ -1,0 +1,160 @@
+<!DOCTYPE html>  <html lang="es">  
+<head>  
+  <meta charset="UTF-8" />  
+  <title>Pricing Restaurantes</title>  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />    <link rel="manifest" href="manifest.json" />  
+  <link rel="stylesheet" href="style.css" />  
+</head>  <body>  
+  <div class="app">  <header class="header">  
+  <img src="assets/logo.png" alt="Logo" class="logo" />  
+  <h1>Motor de Pricing · Restaurantes</h1>  
+</header>  
+
+<main class="form" id="pricingForm">  
+
+  <label>  
+    Nombre del restaurante  
+    <input type="text" id="nombre" placeholder="Ej. Restaurante El Asador" />  
+  </label>  
+
+  <label>  
+    Código Postal  
+    <input type="number" id="cp" placeholder="Ej. 28380" />  
+  </label>  
+
+  <label>  
+    Municipio  
+    <input type="text" id="municipio" placeholder="Ej. Madrid" />  
+  </label>  
+
+  <label>  
+    Valoración media  
+    <input type="number" step="0.1" id="rating" placeholder="Ej. 4.5 ⭐️" />  
+  </label>  
+
+  <label>  
+    Número de reseñas  
+    <input type="number" id="resenas" placeholder="Ej. 230" />  
+  </label>  
+
+  <!-- ===== GASTO MEDIO (5€ A 200€, DE 5 EN 5) ===== -->  
+  <label>  
+    Gasto medio por persona  
+    <select id="gasto">  
+      <!-- se rellena por JS, NO SE BORRA -->  
+    </select>  
+  </label>  
+
+  <!-- ===== ESCENARIOS COMPLETOS ===== -->  
+  <label>  
+    Escenario  
+    <select id="escenario">  
+      <option value="recomendado">Recomendado</option>  
+      <option value="Low">Low</option>  
+      <option value="Medium">Medium</option>  
+      <option value="High">High</option>  
+    </select>  
+  </label>  
+
+  <button id="calcular">📊 Calcular precio</button>  
+
+<button
+  type="button"
+  id="btnModoEstandar"
+  style="display:none;"
+>
+  🤔 Cliente no decide → mostrar setup
+</button>
+
+<button
+  type="button"
+  id="btnCierreFinal"
+  style="display:none;"
+>
+  ✅ Cliente dice sí
+</button>
+
+<button
+  type="button"
+  id="btnWhatsappOnboarding"
+  style="display:none;"
+>
+  📲 Enviar onboarding por WhatsApp
+</button>
+
+  <!-- ===== BOTONES EXTRA (NO SE TOCA NADA EXISTENTE) ===== -->  
+  <button type="button" id="btnPdf">📄 PDF</button>
+<button type="button" id="btnWhatsapp">📲 WhatsApp</button>
+<button type="button" id="btnArgumento">🧠 Qué decir</button>
+<button type="button" id="btnObjeciones">🛑 Objeciones</button>
+
+<button
+  type="button"
+  id="btnGuiaLlamadas"
+  style="font-size:12px; background:#020617; color:#9ca3af; border:1px dashed #334155;"
+>
+  📞 Guía de llamada
+</button>
+
+<!-- ===== BOTONES DE PAGO (OCULTOS POR DEFECTO) ===== -->
+<button
+  type="button"
+  id="btnCrearEnlaceInmediato"
+  style="display:none;"
+>
+  💳 Crear enlace de pago · Activación inmediata
+</button>
+
+<button
+  type="button"
+  id="btnCrearEnlaceSetup"
+  style="display:none;"
+>
+  🧾 Crear enlace de pago · Setup
+</button>
+
+<section id="resultado" class="resultado"></section>  
+
+<section
+  id="onboarding"
+  style="display:none; margin-top:16px;"
+></section>
+<button
+  type="button"
+  id="btnContinuarGuia"
+  style="display:none; margin-top:12px;"
+>
+  👉 Continuar con la guía de llamadas
+</button>
+</main>
+</div>
+  <!-- ===============================
+     MODAL · GUÍA DE LLAMADAS
+=============================== -->
+<div id="modalLlamadas" class="modal-llamadas" style="display:none;">
+  <div class="modal-contenido">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center;">
+        <button
+          id="modalAtras"
+          class="modal-atras"
+          title="Volver atrás"
+          style="display:none;"
+        >
+          ←
+        </button>
+
+        <span>📞 Guía de llamada</span>
+      </div>
+
+      <button id="cerrarModalLlamadas" class="modal-cerrar">✖</button>
+    </div>
+
+    <div class="modal-body">
+      <p>Panel de guía de llamadas (estructura).</p>
+    </div>
+  </div>
+</div>
+  <script src="app.js"></script>  
+  </body>  
+</html>
