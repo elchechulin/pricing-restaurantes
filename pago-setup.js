@@ -26,12 +26,10 @@ sino la correcta ejecución del proceso acordado.
 
 <p style="margin-top:12px;">
 Consulta el
-<a
-  class="contrato"
-  href="https://www.mesasllenas.com/terminos-del-servicio.html"
-  target="_blank"
-  rel="noopener noreferrer"
->
+<a class="contrato"
+   href="https://www.mesasllenas.com/terminos-del-servicio.html"
+   target="_blank"
+   rel="noopener noreferrer">
 Contrato
 </a>
 completo antes de continuar.
@@ -39,13 +37,8 @@ completo antes de continuar.
 `;
 
 checkbox.addEventListener("change", () => {
-  if (checkbox.checked) {
-    btn.classList.add("activo");
-    btn.disabled = false;
-  } else {
-    btn.classList.remove("activo");
-    btn.disabled = true;
-  }
+  btn.disabled = !checkbox.checked;
+  btn.classList.toggle("activo", checkbox.checked);
 });
 
 btn.onclick = async () => {
@@ -56,44 +49,47 @@ btn.onclick = async () => {
   }
 
   const matchMensual = resumen.match(/MENSUALIDAD:\s(\d+)\s€/);
-const matchSetup = resumen.match(/SETUP:\s(\d+)\s€/);
+  const matchSetup = resumen.match(/SETUP:\s(\d+)\s€/);
 
-if (!matchMensual) {
-  alert("No se pudo detectar la mensualidad.");
-  return;
-}
+  if (!matchMensual || !matchSetup) {
+    alert("Error interno: no se detectó mensualidad o setup.");
+    return;
+  }
 
-const mensualidad = parseInt(matchMensual[1], 10);
-const setup = matchSetup ? parseInt(matchSetup[1], 10) : null;
+  const mensualidad = parseInt(matchMensual[1], 10);
+  const setup = parseInt(matchSetup[1], 10);
 
-  const res = await fetch(
-    "https://stripe-backend-h1z1.vercel.app/api/create-checkout",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-  modo: "setup",
-  mensualidad,
-  ...(setup ? { setup } : {})
-})
+  try {
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/create-checkout",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          modo: "setup",
+          mensualidad,
+          setup
+        })
+      }
+    );
+
+    if (!res.ok) {
+      const errorText = await res.text();
+      console.error("BACKEND ERROR:", res.status, errorText);
+      alert("Error conectando con el sistema de pago.");
+      return;
     }
-  );
 
-  if (!res.ok) {
-    alert("Error conectando con el sistema de pago.");
-    return;
+    const data = await res.json();
+    if (!data.url) {
+      alert("Stripe no devolvió una URL válida.");
+      return;
+    }
+
+    window.location.href = data.url;
+
+  } catch (err) {
+    console.error("FETCH ERROR:", err);
+    alert("Error inesperado al conectar con Stripe.");
   }
-
-  const data = await res.json();
-  const checkoutUrl =
-    data.url ||
-    data.checkoutUrl ||
-    (data.session && data.session.url);
-
-  if (!checkoutUrl) {
-    alert("Stripe no devolvió una URL válida.");
-    return;
-  }
-
-  window.location.href = checkoutUrl;
 };
