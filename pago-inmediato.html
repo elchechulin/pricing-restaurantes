@@ -1,30 +1,118 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>Aceptar términos y continuar</title>
-  <link rel="stylesheet" href="style.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link rel="stylesheet" href="style.css" />
+
+  <style>
+    body {
+      background: #020617;
+      color: #e5e7eb;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      padding: 16px;
+    }
+
+    .terminos-box {
+      max-width: 520px;
+      width: 100%;
+      background: #020617;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 24px;
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,0.02),
+        0 20px 60px rgba(0,0,0,0.6);
+    }
+
+    h1 {
+      font-size: 18px;
+      margin-bottom: 12px;
+      color: #f9fafb;
+    }
+
+    .terminos-texto {
+      font-size: 13px;
+      line-height: 1.6;
+      color: #9ca3af;
+      max-height: 240px;
+      overflow-y: auto;
+      border: 1px solid #1e293b;
+      padding: 14px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .terminos-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+
+    .terminos-check input {
+      margin-top: 3px;
+      accent-color: #e10600;
+    }
+
+    .btn-continuar {
+      width: 100%;
+      padding: 12px;
+      border-radius: 10px;
+      border: none;
+      font-size: 14px;
+      font-weight: 800;
+      background: #1f2933;
+      color: #6b7280;
+      cursor: not-allowed;
+      transition: all 0.2s ease;
+    }
+
+    .btn-continuar.activo {
+      background: #e10600;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 10px 30px rgba(225,6,0,0.45);
+    }
+
+    .btn-continuar.activo:hover {
+      filter: brightness(1.05);
+    }
+
+    a.contrato {
+      color: #e10600;
+      font-weight: 700;
+      text-decoration: none;
+    }
+  </style>
 </head>
+
 <body>
 
-<h2>Antes de continuar</h2>
+  <div class="terminos-box">
+    <h1>📄 Confirmación legal</h1>
 
-<p>
-Para proceder al pago debes aceptar los
-<a href="/terminos.html" target="_blank">Términos del servicio</a>.
-</p>
+    <div class="terminos-texto" id="textoTerminos">
+      <!-- Se rellena por JS -->
+    </div>
 
-<label>
-  <input type="checkbox" id="acepto">
-  He leído y acepto los Términos del servicio
-</label>
+    <label class="terminos-check">
+      <input type="checkbox" id="acepto" />
+      <span>He leído y acepto los términos del servicio</span>
+    </label>
 
-<br><br>
+    <button id="continuarPago" class="btn-continuar" disabled>
+      Continuar al pago
+    </button>
+  </div>
 
-<button id="continuarPago" disabled>
-  Continuar al pago
-</button>
-
-<script src="pago-inmediato.js"></script>
+  <script src="pago-inmediato.js"></script>
 </body>
 </html>

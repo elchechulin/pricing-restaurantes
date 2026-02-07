@@ -4,14 +4,18 @@ const textoBox = document.getElementById("textoTerminos");
 
 textoBox.innerHTML = `
 <p>
-Al continuar, aceptas la <strong>activación inmediata del servicio</strong>
-con tarifa reducida por contratación en el momento.
+Al continuar, aceptas la <strong>activación estándar del servicio</strong>,
+que incluye un pago inicial de setup para la puesta en marcha del sistema.
 </p>
 
 <p>
-No existe coste de setup inicial.
-El servicio se factura mediante una mensualidad recurrente
-que comenzará a cobrarse a partir del siguiente periodo.
+El pago de setup cubre la configuración inicial,
+la preparación estratégica y el arranque del servicio.
+</p>
+
+<p>
+La mensualidad recurrente comenzará a cobrarse
+a partir del mes siguiente a la activación.
 </p>
 
 <p>
@@ -51,13 +55,16 @@ btn.onclick = async () => {
     return;
   }
 
-  const match = resumen.match(/MENSUALIDAD:\s(\d+)\s€/);
-  if (!match) {
-    alert("No se pudo detectar la mensualidad.");
-    return;
-  }
+  const matchMensual = resumen.match(/MENSUALIDAD:\s(\d+)\s€/);
+const matchSetup = resumen.match(/SETUP:\s(\d+)\s€/);
 
-  const mensualidad = parseInt(match[1], 10);
+if (!matchMensual) {
+  alert("No se pudo detectar la mensualidad.");
+  return;
+}
+
+const mensualidad = parseInt(matchMensual[1], 10);
+const setup = matchSetup ? parseInt(matchSetup[1], 10) : null;
 
   const res = await fetch(
     "https://stripe-backend-h1z1.vercel.app/api/create-checkout",
@@ -65,9 +72,10 @@ btn.onclick = async () => {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        modo: "inmediato",
-        mensualidad
-      })
+  modo: "setup",
+  mensualidad,
+  ...(setup ? { setup } : {})
+})
     }
   );
 
