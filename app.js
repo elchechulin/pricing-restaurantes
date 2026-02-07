@@ -588,56 +588,15 @@ document.getElementById("btnCierreFinal").onclick = () => {
 /* ===============================
    BOTÓN · CREAR ENLACE INMEDIATO (STRIPE)
 =============================== */
-document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
+document.getElementById("btnCrearEnlaceInmediato").onclick = () => {
   const texto = obtenerResultadoVisible();
   if (!texto) {
     alert("Primero calcula un presupuesto.");
     return;
   }
 
-  const matchMensual = texto.match(/MENSUALIDAD:\s(\d+)\s€/);
-  if (!matchMensual) {
-    alert("No se pudo detectar la mensualidad.");
-    return;
-  }
-
-  const mensualidad = parseInt(matchMensual[1], 10);
-
-  try {
-    const res = await fetch(
-  "https://stripe-backend-h1z1.vercel.app/api/create-checkout",
-  {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      modo: "inmediato",
-      mensualidad
-    })
-  }
-);
-
-if (!res.ok) {
-  alert("El backend de pagos devolvió un error.");
-  return;
-}
-
-const data = await res.json();
-
-    const checkoutUrl =
-  data.url ||
-  data.checkoutUrl ||
-  (data.session && data.session.url);
-
-if (!checkoutUrl) {
-  alert("Stripe no devolvió una URL de pago.");
-  console.error("Respuesta completa del backend:", data);
-  return;
-}
-
-window.location.href = checkoutUrl;
-  } catch (err) {
-    alert("Error conectando con el sistema de pago.");
-  }
+  localStorage.setItem("resumenPago", texto);
+  window.location.href = "/pago-inmediato.html";
 };
 
 
