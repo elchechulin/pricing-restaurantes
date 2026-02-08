@@ -1,91 +1,103 @@
-const checkbox = document.getElementById("acepto");
-const btn = document.getElementById("continuarPago");
-const textoBox = document.getElementById("textoTerminos");
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("✅ JS cargado");
 
-textoBox.innerHTML = `
-<p>
-Al continuar, aceptas la <strong>activación inmediata del servicio</strong>
-con tarifa reducida por contratación en el momento.
-</p>
+  const checkbox = document.getElementById("acepto");
+  const btn = document.getElementById("continuarPago");
 
-<p>
-No existe coste de setup inicial.
-El servicio se factura mediante una mensualidad recurrente
-que comenzará a cobrarse a partir del siguiente periodo.
-</p>
+  if (!checkbox || !btn) {
+    console.error("❌ Elementos no encontrados", { checkbox, btn });
+    alert("Error interno: elementos no encontrados");
+    return;
+  }
 
-<p>
-Este documento tiene validez contractual
-y no garantiza resultados concretos,
-sino la correcta ejecución del proceso acordado.
-</p>
+  btn.disabled = true;
 
-<p style="margin-top:12px;">
-Consulta el
-<a
-  class="contrato"
-  href="https://www.mesasllenas.com/terminos-del-servicio.html"
-  target="_blank"
-  rel="noopener noreferrer"
->
-Contrato
-</a>
-completo antes de continuar.
-</p>
-`;
+  const params = new URLSearchParams(window.location.search);
+  const token = params.get("token");
 
-checkbox.addEventListener("change", () => {
-  if (checkbox.checked) {
-    btn.classList.add("activo");
-    btn.disabled = false;
-  } else {
-    btn.classList.remove("activo");
+  if (!token) {
+    alert("Enlace no válido o caducado.");
+    return;
+  }
+  const textoBox = document.getElementById("textoTerminos");
+
+if (textoBox) {
+  textoBox.innerHTML = `
+    <p>
+      Al continuar, aceptas la <strong>activación inmediata del servicio</strong>,
+      sin coste de setup inicial.
+    </p>
+
+    <p>
+      En este momento se cobrará la
+      <strong>mensualidad correspondiente</strong>
+      y el servicio quedará activado desde hoy.
+    </p>
+
+    <p>
+      La mensualidad se cobrará de forma
+      <strong>automática cada 30 días</strong>
+      hasta que el servicio sea cancelado.
+    </p>
+
+    <p>
+      Este documento tiene validez contractual
+      y no garantiza resultados concretos,
+      sino la correcta ejecución del servicio acordado.
+    </p>
+
+    <p style="margin-top:12px;">
+      Consulta el
+      <a class="contrato"
+         href="https://www.mesasllenas.com/terminos-del-servicio.html"
+         target="_blank"
+         rel="noopener noreferrer">
+        contrato completo
+      </a>
+      antes de continuar.
+    </p>
+  `;
+}
+
+  checkbox.addEventListener("change", () => {
+    btn.disabled = !checkbox.checked;
+    btn.classList.toggle("activo", checkbox.checked);
+  });
+
+  btn.addEventListener("click", async () => {
+    console.log("🔥 Click detectado");
+
     btn.disabled = true;
-  }
-});
+    btn.textContent = "Redirigiendo a pago...";
 
-btn.onclick = async () => {
-  const resumen = localStorage.getItem("resumenPago");
-  if (!resumen) {
-    alert("No se encontró el resumen del pago.");
-    return;
-  }
+    try {
+      const res = await fetch(
+        "https://stripe-backend-h1z1.vercel.app/api/create-checkout",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+  modo: "inmediato",
+  token
+})
+        }
+      );
 
-  const match = resumen.match(/MENSUALIDAD:\s(\d+)\s€/);
-  if (!match) {
-    alert("No se pudo detectar la mensualidad.");
-    return;
-  }
+      console.log("📡 Respuesta backend:", res.status);
 
-  const mensualidad = parseInt(match[1], 10);
+      const data = await res.json();
+      console.log("📦 Data:", data);
 
-  const res = await fetch(
-    "https://stripe-backend-h1z1.vercel.app/api/create-checkout",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        modo: "inmediato",
-        mensualidad
-      })
+      if (!data.url) {
+        alert("Stripe no devolvió URL");
+        return;
+      }
+
+      window.location.href = data.url;
+
+    } catch (err) {
+      console.error("❌ Error fetch:", err);
+      alert("Error conectando con el sistema de pago");
     }
-  );
-
-  if (!res.ok) {
-    alert("Error conectando con el sistema de pago.");
-    return;
-  }
-
-  const data = await res.json();
-  const checkoutUrl =
-    data.url ||
-    data.checkoutUrl ||
-    (data.session && data.session.url);
-
-  if (!checkoutUrl) {
-    alert("Stripe no devolvió una URL válida.");
-    return;
-  }
-
-  window.location.href = checkoutUrl;
-};
+  });
+});

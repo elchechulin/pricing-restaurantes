@@ -618,18 +618,53 @@ document.getElementById("btnCierreFinal").onclick = () => {
 /* ===============================
    BOTÓN · CREAR ENLACE INMEDIATO
 =============================== */
-document.getElementById("btnCrearEnlaceInmediato").onclick = () => {
+document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
   const texto = obtenerResultadoVisible();
   if (!texto) {
     alert("Primero calcula un presupuesto.");
     return;
   }
 
-  localStorage.setItem("resumenPago", texto);
+  const matchMensual = texto.match(/MENSUALIDAD:\s(\d+)\s€/);
 
-  const url = `${window.location.origin}/pago-inmediato.html`;
+  if (!matchMensual) {
+    alert("No se pudo detectar la mensualidad.");
+    return;
+  }
 
-  abrirModalLink(url);
+  const mensualidad = parseInt(matchMensual[1], 10);
+
+  try {
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/create-payment-link",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          mensualidad,
+          setup: 0
+        })
+      }
+    );
+
+    if (!res.ok) {
+      alert("Error creando el enlace de pago inmediato.");
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data.url) {
+      alert("No se recibió una URL válida.");
+      return;
+    }
+
+    abrirModalLink(data.url);
+
+  } catch (err) {
+    console.error(err);
+    alert("Error conectando con el backend.");
+  }
 };
 
 
