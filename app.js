@@ -1,4 +1,34 @@
 document.addEventListener("DOMContentLoaded", () => {
+  
+  // ===============================
+// MODAL · ENLACE DE PAGO (HELPERS)
+// ===============================
+const modalLink = document.getElementById("modalLink");
+const cerrarModalLink = document.getElementById("cerrarModalLink");
+const inputLinkPago = document.getElementById("linkPago");
+const btnCopyLink = document.getElementById("btnCopyLink");
+
+function abrirModalLink(url) {
+  inputLinkPago.value = url;
+  modalLink.style.display = "flex";
+  document.body.classList.add("modal-abierto");
+}
+
+function cerrarModalPago() {
+  modalLink.style.display = "none";
+  document.body.classList.remove("modal-abierto");
+}
+
+cerrarModalLink.onclick = cerrarModalPago;
+
+btnCopyLink.onclick = () => {
+  inputLinkPago.select();
+  document.execCommand("copy");
+  btnCopyLink.textContent = "✅ Enlace copiado";
+  setTimeout(() => {
+    btnCopyLink.textContent = "📋 Copiar enlace";
+  }, 1500);
+};
   /* ===============================
      MODO DE CIERRE (ESTADO GLOBAL)
   =============================== */
@@ -596,22 +626,63 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = () => {
   }
 
   localStorage.setItem("resumenPago", texto);
-  window.location.href = "/pago-inmediato.html";
+
+  const url = `${window.location.origin}/pago-inmediato.html`;
+
+  abrirModalLink(url);
 };
 
 
 /* ===============================
    BOTÓN · CREAR ENLACE SETUP
 =============================== */
-document.getElementById("btnCrearEnlaceSetup").onclick = () => {
+document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
   const texto = obtenerResultadoVisible();
   if (!texto) {
     alert("Primero calcula un presupuesto.");
     return;
   }
 
-  localStorage.setItem("resumenPago", texto);
-  window.location.href = "/pago-setup.html";
+  // Extraer importes del texto
+  const matchMensual = texto.match(/MENSUALIDAD:\s(\d+)\s€/);
+  const matchSetup = texto.match(/SETUP:\s(\d+)\s€/);
+
+  if (!matchMensual || !matchSetup) {
+    alert("No se pudieron detectar los importes.");
+    return;
+  }
+
+  const mensualidad = parseInt(matchMensual[1], 10);
+  const setup = parseInt(matchSetup[1], 10);
+
+  try {
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/create-payment-link",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mensualidad, setup })
+      }
+    );
+
+    if (!res.ok) {
+      alert("Error creando el enlace de pago.");
+      return;
+    }
+
+    const data = await res.json();
+
+    if (!data.url) {
+      alert("No se recibió una URL válida.");
+      return;
+    }
+
+    abrirModalLink(data.url);
+
+  } catch (err) {
+    console.error(err);
+    alert("Error conectando con el backend.");
+  }
 };
 /* ===============================
    GUÍA DE LLAMADAS · MOTOR BASE
