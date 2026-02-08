@@ -19,6 +19,43 @@ document.addEventListener("DOMContentLoaded", () => {
     alert("Enlace no válido o caducado.");
     return;
   }
+  const textoBox = document.getElementById("textoTerminos");
+
+if (textoBox) {
+  textoBox.innerHTML = `
+    <p>
+      Al continuar, aceptas la <strong>activación estándar del servicio</strong>,
+      que incluye un pago inicial de setup para la puesta en marcha del sistema.
+    </p>
+
+    <p>
+      El pago de setup cubre la configuración inicial,
+      la preparación estratégica y el arranque del servicio.
+    </p>
+
+    <p>
+      La mensualidad recurrente comenzará a cobrarse
+      automáticamente a partir del mes siguiente a la activación.
+    </p>
+
+    <p>
+      Este documento tiene validez contractual
+      y no garantiza resultados concretos,
+      sino la correcta ejecución del servicio acordado.
+    </p>
+
+    <p style="margin-top:12px;">
+      Consulta el
+      <a class="contrato"
+         href="https://www.mesasllenas.com/terminos-del-servicio.html"
+         target="_blank"
+         rel="noopener noreferrer">
+        contrato completo
+      </a>
+      antes de continuar.
+    </p>
+  `;
+}
 
   checkbox.addEventListener("change", () => {
     btn.disabled = !checkbox.checked;
