@@ -29,9 +29,13 @@ btnCopyLink.onclick = () => {
     btnCopyLink.textContent = "📋 Copiar enlace";
   }, 1500);
 };
+
   /* ===============================
      MODO DE CIERRE (ESTADO GLOBAL)
   =============================== */
+  
+  let textoCliente = "";
+let textoInterno = "";
 
   // Modo por defecto: activación inmediata con descuento
   let modoCierre = "inmediato";
@@ -57,7 +61,22 @@ let datosOnboarding = {
 
   const resultadoEl = document.getElementById("resultado");
   const modalLlamadas = document.getElementById("modalLlamadas");
+  const btnVolverPresupuesto = document.getElementById("btnVolverPresupuesto");
+  btnVolverPresupuesto.onclick = () => {
+  modalLlamadas.style.display = "none";
+  document.body.classList.remove("modal-abierto");
+  btnVolverPresupuesto.style.display = "none";
 
+  // 👇 VOLVER A MOSTRAR CONTINUAR GUÍA
+  document.getElementById("btnContinuarGuia").style.display = "block";
+};
+// ===============================
+// MODAL · GUÍA DE LLAMADAS (CIERRE SEGURO)
+// ===============================
+function cerrarModalLlamadasSeguro() {
+  modalLlamadas.style.display = "none";
+  document.body.classList.remove("modal-abierto");
+}
   /* ===============================
      GASTO MEDIO 5€ → 200€
   =============================== */
@@ -236,7 +255,7 @@ Competencia estimada: ${competencia} locales
     const ingresoMesa = gasto * 4;
     const mesas = Math.max(1, Math.round(mensualFinal / ingresoMesa));
 
-    const resultadoFinal = `
+    textoCliente = `
 RESTAURANTE: ${nombre}
 MUNICIPIO: ${municipio}
 
@@ -259,7 +278,8 @@ la mensualidad queda amortizada.
 ${infoRecomendado}
 `.trim();
 
-    resultadoEl.textContent = resultadoFinal;
+resultadoEl.textContent = textoCliente;
+
     resultadoEl.scrollIntoView({ behavior: "smooth" });
     
     /* ===============================
@@ -276,6 +296,11 @@ El cliente ha aceptado la propuesta.
 Continúa con la activación y onboarding.
 `;
 }
+
+textoInterno = `
+────────────────────
+${textoCierre}
+`;
 
 let rolActual = "encargado";
 
@@ -472,7 +497,7 @@ Seguimos en contacto 👍
    PDF PROFESIONAL
 =============================== */
 document.getElementById("btnPdf").onclick = () => {
-  const texto = obtenerResultadoVisible();
+  const texto = textoCliente;
   if (!texto) {
     alert("Primero calcula un presupuesto.");
     return;
@@ -1267,7 +1292,8 @@ if (estadoLlamada === "trabajador_fin") {
     historialLlamada.push(estadoLlamada);
 if (estadoLlamada === "puente_calculo") {
   volverAGuiaTrasCalculo = true;
-  modalLlamadas.style.display = "none";
+  historialLlamada = []; // reset lógico
+  cerrarModalLlamadasSeguro();
 }
     // Avanzar al siguiente estado
     estadoLlamada = btn.dataset.siguiente;
@@ -1286,9 +1312,13 @@ const btnContinuarGuia = document.getElementById("btnContinuarGuia");
 btnContinuarGuia.onclick = () => {
   btnContinuarGuia.style.display = "none";
 
-  volverAGuiaTrasCalculo = false; // 🔴 reset clave
+  volverAGuiaTrasCalculo = false;
 
   modalLlamadas.style.display = "flex";
+  document.body.classList.add("modal-abierto");
+
+  // 👇 AÑADE ESTA LÍNEA
+  btnVolverPresupuesto.style.display = "inline-block";
 
   renderPasoLlamada();
   actualizarBotonAtras();

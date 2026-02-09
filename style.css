@@ -402,3 +402,45 @@ body.modal-abierto .modal-llamadas {
 .btn-continuar:disabled {
   opacity: 0.6;
 }
+/* ===============================
+   BOTÓN · VOLVER AL PRESUPUESTO (PREMIUM)
+=============================== */
+
+#btnVolverPresupuesto {
+  margin-left: auto;
+  margin-right: 12px;
+
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  padding: 6px 12px;
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+
+  color: #e5e7eb;
+  font-size: 12.5px;
+  font-weight: 600;
+
+  cursor: pointer;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.15s ease,
+    opacity 0.15s ease;
+}
+
+/* Hover elegante */
+#btnVolverPresupuesto:hover {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.35);
+  opacity: 0.95;
+}
+
+/* Click táctil */
+#btnVolverPresupuesto:active {
+  transform: scale(0.96);
+}
