@@ -626,7 +626,6 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
   }
 
   const matchMensual = texto.match(/MENSUALIDAD:\s(\d+)\s€/);
-
   if (!matchMensual) {
     alert("No se pudo detectar la mensualidad.");
     return;
@@ -642,30 +641,35 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           mensualidad,
-          setup: 0
+          setup: 0,
+          modo: "inmediato"
         })
       }
     );
 
     if (!res.ok) {
-      alert("Error creando el enlace de pago inmediato.");
+      const errorText = await res.text();
+      console.error("❌ Stripe backend error:", errorText);
+      alert("El backend de pago devolvió un error.");
       return;
     }
 
     const data = await res.json();
 
     if (!data.url) {
-      alert("No se recibió una URL válida.");
+      alert("Stripe no devolvió una URL.");
       return;
     }
 
     abrirModalLink(data.url);
 
   } catch (err) {
-    console.error(err);
-    alert("Error conectando con el backend.");
+    console.error("❌ Fetch error:", err);
+    alert("No se pudo conectar con el sistema de pago.");
   }
 };
+
+
 
 
 /* ===============================
