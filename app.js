@@ -700,7 +700,11 @@ document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
       {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ mensualidad, setup })
+        body: JSON.stringify({
+  mensualidad,
+  setup,
+  modo: "setup"
+})
       }
     );
 
