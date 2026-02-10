@@ -282,6 +282,32 @@ let factorEconomico =
 // Protección de límites (muy importante)
 if (factorEconomico < 0.85) factorEconomico = 0.85;
 if (factorEconomico > 1.35) factorEconomico = 1.35;
+// ===============================
+// PROTECCIÓN ANTI-ANOMALÍAS (SILENCIOSA)
+// ===============================
+
+// 1) Rating alto con pocas reseñas → desconfianza
+if (rating >= 4.6 && resenas < 50) {
+  indice *= 0.85;
+}
+
+// 2) Gasto bajo intentando High Ticket → freno
+if (gasto < 25 && escenarioAplicado === "High") {
+  indice *= 0.88;
+}
+
+// 3) Pocas reseñas + índice alto → suavizado
+if (resenas < 120 && indice > 1.4) {
+  indice = 1.4 + (indice - 1.4) * 0.4;
+}
+
+// 4) Negocio pequeño con modelo premium implícito → ajuste
+if (gasto < 20 && indice > 1.3) {
+  indice *= 0.9;
+}
+
+if (resenas < 600) indice *= 1.15;
+else indice *= 1.35;
 
 if (["asador","brasa","steak","gastro","grill"].some(k => n.includes(k))) {
       indice *= 1.25; razones.push("formato gastronómico de ticket alto");
@@ -291,9 +317,6 @@ if (["asador","brasa","steak","gastro","grill"].some(k => n.includes(k))) {
       razones.push("formato estándar");
     }
 
-    if (resenas < 50) indice *= 0.85;
-    else if (resenas < 600) indice *= 1.15;
-    else indice *= 1.35;
 
     if (rating < 4.0) indice *= 0.9;
     else if (rating < 4.6) indice *= 1.1;
@@ -360,11 +383,91 @@ else if (indice >= 1.2) {
   );
 }
 
+// ===============================
+// ELASTICIDAD DETERMINISTA POR ESCENARIO
+// ===============================
 
+let elasticidad = 1;
+
+if (escenarioAplicado === "Low") {
+  elasticidad = 0.95;
+}
+
+if (escenarioAplicado === "Medium") {
+  elasticidad = 1.00;
+}
+
+if (escenarioAplicado === "High") {
+  elasticidad = 1.08;
+}
+
+indice *= elasticidad;
+
+// ===============================
+// SUAVIZADO FINAL DE ÍNDICE
+// ===============================
+
+// Evita saltos bruscos cerca de umbrales
+function suavizarIndice(x) {
+  // curva sigmoide suave centrada en 1.3
+  const k = 4;      // pendiente (más alto = más agresivo)
+  const x0 = 1.3;   // centro de suavizado
+  const min = 0.9;  // límite inferior
+  const max = 1.4;  // límite superior
+
+  const s = 1 / (1 + Math.exp(-k * (x - x0)));
+  return min + (max - min) * s;
+}
+
+// Aplicación del suavizado
+indice = suavizarIndice(indice);
+// ===============================
+// LÍMITES DUROS POR ESCENARIO
+// ===============================
+
+if (escenarioAplicado === "Low") {
+  if (indice > 1.15) indice = 1.15;
+}
+
+if (escenarioAplicado === "Medium") {
+  if (indice < 1.00) indice = 1.00;
+  if (indice > 1.35) indice = 1.35;
+}
+
+if (escenarioAplicado === "High") {
+  if (indice < 1.20) indice = 1.20;
+}
 
 // Aplicación final del índice
 let mensual = Math.round(baseMensual * indice);
 let setup = Math.round(baseSetup * indice);
+// ===============================
+// CONTROL PSICOLÓGICO DE PRECIOS
+// ===============================
+
+function ajustarPrecioPsicologico(precio) {
+  if (precio < 40) return Math.round(precio / 5) * 5;
+
+  if (precio < 80) {
+    const opciones = [39, 45, 49, 55, 59, 65, 69, 75, 79];
+    return opciones.reduce((prev, curr) =>
+      Math.abs(curr - precio) < Math.abs(prev - precio) ? curr : prev
+    );
+  }
+
+  if (precio < 150) {
+    const opciones = [89, 95, 99, 109, 119, 129, 139, 149];
+    return opciones.reduce((prev, curr) =>
+      Math.abs(curr - precio) < Math.abs(prev - precio) ? curr : prev
+    );
+  }
+
+  // High ticket → redondeo serio
+  return Math.round(precio / 10) * 10;
+}
+
+// Aplicación final visible al cliente
+mensual = ajustarPrecioPsicologico(mensual);
 // ===== PRECIO BASE (NO SE COMUNICA AL CLIENTE) =====
     const mensualBase = mensual;
     const setupBase = setup; // reservado para modo estándar
@@ -385,6 +488,17 @@ let setup = Math.round(baseSetup * indice);
     }
     const ingresoMesa = gasto * 4;
     const mesas = Math.max(1, Math.round(mensualFinal / ingresoMesa));
+    // ===============================
+// ANCLAJE DE PÉRDIDA REAL
+// ===============================
+
+// estimación conservadora de mesas perdidas entre semana
+const mesasPerdidasEstimadas = Math.max(4, Math.round(mesas * 2));
+
+// pérdida económica mensual aproximada
+const perdidaMensual = mesasPerdidasEstimadas * ingresoMesa;
+
+const perdidaMensualAjustada = Math.min(perdidaMensual, mensualFinal * 6);
 
     textoCliente = `
 RESTAURANTE: ${nombre}
@@ -398,10 +512,15 @@ MODELO: ${modelo}
 MODO DE ACTIVACIÓN:
 ${textoModo}
 
+Ahora mismo, no llenar entre semana
+supone una pérdida aproximada de
+${perdidaMensualAjustada} € al mes.
+
 ${setupFinal > 0 ? `SETUP: ${setupFinal} €\n` : ""}MENSUALIDAD: ${mensualFinal} €
 
 ANÁLISIS:
 - ${razones.join("\n- ")}
+
 
 Con solo ${mesas} mesas adicionales al mes
 (≈ ${ingresoMesa} € por mesa)
@@ -431,6 +550,14 @@ Continúa con la activación y onboarding.
 textoInterno = `
 ────────────────────
 ${textoCierre}
+
+[LOG INTERNO]
+Escenario aplicado: ${escenarioAplicado}
+Índice final: ${indice.toFixed(2)}
+ICE: ${ICE.toFixed(2)}
+IT: ${IT.toFixed(2)}
+IO: ${IO.toFixed(2)}
+IR: ${IR.toFixed(2)}
 `;
 
 let rolActual = "encargado";
@@ -782,12 +909,46 @@ document.getElementById("btnPdf").onclick = () => {
     </div>
   </div>
 
-  <div class="section">
-    <h3>Propuesta económica</h3>
-    <div class="box">
-      <pre>${texto}</pre>
-    </div>
+<div class="section">
+  <h3>Por qué estás viendo este documento</h3>
+  <div class="box">
+    Este informe no es una tarifa estándar ni un precio genérico.<br><br>
+
+    El cálculo que vas a ver a continuación se ha generado a partir de:
+    <ul>
+      <li>Ticket medio del restaurante</li>
+      <li>Capacidad real de retorno entre semana</li>
+      <li>Nivel de competencia en tu zona</li>
+      <li>Riesgo asumido y oportunidad de mejora</li>
+    </ul>
+
+    <strong>Conclusión:</strong><br>
+    El precio no se ha pensado para venderte un servicio,
+    sino para que el servicio se pague solo.
   </div>
+</div>
+
+  <div class="section">
+  <h3>Resultado del análisis</h3>
+  <div class="box">
+    <pre>${texto}</pre>
+  </div>
+</div>
+
+<div class="section">
+  <h3>Qué significa este número</h3>
+  <div class="box">
+    Si el restaurante genera una sola mesa adicional al mes
+    entre semana, la inversión queda amortizada.<br><br>
+
+    Todo lo que ocurra a partir de la segunda mesa
+    es margen neto.<br><br>
+
+    <strong>No se trata de gastar más.</strong><br>
+    Se trata de dejar de perder ingresos
+    que ahora mismo no se están capturando.
+  </div>
+</div>
 
   <div class="footer">
     ${modoCierre === "inmediato" ? `
