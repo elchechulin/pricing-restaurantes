@@ -177,11 +177,32 @@ onboardingActivo = false;
     const resenas = parseInt(document.getElementById("resenas").value);
     const gasto = parseInt(gastoSelect.value);
     const escenarioSeleccionado = document.getElementById("escenario").value;
-
+    
     if (!nombre || isNaN(rating) || isNaN(resenas) || isNaN(gasto)) {
-      alert("Completa todos los campos");
-      return;
-    }
+  alert("Completa todos los campos");
+  return;
+}
+    
+    let indice = 1.0;
+let razones = [];
+
+// ÍNDICES INTERNOS (NO VISIBLES AL CLIENTE)
+let ICE = 0; // capacidad económica
+let IT  = 0; // tracción
+let IO  = 0; // oportunidad
+let IR  = 0; // riesgo
+    
+    // ===============================
+// PASO 4 · TRACCIÓN (IT)
+// ===============================
+if (rating >= 4.6) IT += 0.35;
+else if (rating >= 4.3) IT += 0.25;
+else IT += 0.1;
+
+if (resenas >= 500) IT += 0.35;
+else if (resenas >= 200) IT += 0.2;
+else IT += 0.1;
+
 
     let escenarioAplicado = escenarioSeleccionado;
     let infoRecomendado = "";
@@ -196,12 +217,73 @@ Nivel recomendado: ${escenarioAplicado.toUpperCase()}
 Competencia estimada: ${competencia} locales
 `;
     }
+    // ===============================
+// PASO 3 · FACTOR DE ESCENARIO
+// ===============================
+let factorEscenario = 1.0;
 
-    let indice = 1.0;
-    let razones = [];
+if (escenarioAplicado === "Low") {
+  factorEscenario = 0.85;
+}
 
-    const n = nombre.toLowerCase();
-    if (["asador","brasa","steak","gastro","grill"].some(k => n.includes(k))) {
+if (escenarioAplicado === "Medium") {
+  factorEscenario = 1.0;
+}
+
+if (escenarioAplicado === "High") {
+  factorEscenario = 1.25;
+}
+
+// Aplicación única
+indice *= factorEscenario;
+    // ===============================
+// PASO 5 · OPORTUNIDAD (IO)
+// ===============================
+if (resenas >= 300) IO += 0.25;
+if (gasto >= 30) IO += 0.25;
+if (escenarioAplicado === "High") IO += 0.2;
+// ===============================
+// PASO 6 · RIESGO (IR)
+// ===============================
+if (resenas < 80) IR += 0.3;
+if (rating < 4.1) IR += 0.25;
+if (gasto < 20) IR += 0.2;
+// ===============================
+// PASO 2 · CAPACIDAD ECONÓMICA (ICE)
+// ===============================
+
+if (gasto >= 45) ICE += 0.4;
+else if (gasto >= 30) ICE += 0.25;
+else ICE += 0.1;
+
+const n = nombre.toLowerCase();
+
+if (["asador","brasa","steak","gastro","grill"].some(k => n.includes(k))) {
+  ICE += 0.25;
+}
+
+// ===============================
+// PASO 7 · FACTOR ECONÓMICO REAL
+// ===============================
+
+// Normalización de índices
+const factorICE = 1 + ICE;        // capacidad de pagar
+const factorIT  = 1 + IT;         // tracción
+const factorIO  = 1 + IO;         // oportunidad
+const factorIR  = 1 - IR;         // riesgo resta
+
+// Factor combinado (controlado)
+let factorEconomico =
+  (factorICE * 0.35 +
+   factorIT  * 0.30 +
+   factorIO  * 0.25 +
+   factorIR  * 0.10) / 1.0;
+
+// Protección de límites (muy importante)
+if (factorEconomico < 0.85) factorEconomico = 0.85;
+if (factorEconomico > 1.35) factorEconomico = 1.35;
+
+if (["asador","brasa","steak","gastro","grill"].some(k => n.includes(k))) {
       indice *= 1.25; razones.push("formato gastronómico de ticket alto");
     } else if (["bar","caf","tapas","snack","cafeteria"].some(k => n.includes(k))) {
       indice *= 0.9; razones.push("formato de consumo rápido");
@@ -216,24 +298,73 @@ Competencia estimada: ${competencia} locales
     if (rating < 4.0) indice *= 0.9;
     else if (rating < 4.6) indice *= 1.1;
     else indice *= 1.2;
+indice *= factorEconomico;
 
-    if (escenarioAplicado === "Low") indice *= 0.85;
-    if (escenarioAplicado === "High") indice *= 1.25;
+// ===============================
+// CONTROL DE PICOS DEL ÍNDICE
+// ===============================
+
+// Zona alta: desaceleración suave
+if (indice > 1.9 && indice <= 2.4) {
+  indice = 1.9 + (indice - 1.9) * 0.6;
+}
+
+// Zona extrema: compresión fuerte
+if (indice > 2.4) {
+  indice = 2.2 + Math.log(indice - 1.4);
+}
+
+// Protección inferior (evita infravalorar demasiado)
+if (indice < 0.75) {
+  indice = 0.75 + (0.75 - indice) * 0.3;
+}
+// Aplicación FINAL al índice
+    
+// ===== PRECIOS BASE POR MODELO =====
+const BASE = {
+  estandar: { mensual: 29, setup: 180 },
+  crecimiento: { mensual: 79, setup: 420 },
+  premium: { mensual: 149, setup: 800 }
+};
+
+function interpolar(a, b, t) {
+  return a + (b - a) * t;
+}
 
     let modelo = "Estandar";
-    let setup = Math.round(180 * indice);
-    let mensual = Math.round(29 * indice);
+let baseMensual = BASE.estandar.mensual;
+let baseSetup = BASE.estandar.setup;
+
+if (indice >= 1.6) {
+  modelo = "Premium";
+  baseMensual = BASE.premium.mensual;
+  baseSetup = BASE.premium.setup;
+} 
+else if (indice >= 1.2) {
+
+  // t va de 0 → 1 entre 1.2 y 1.6
+  const t = (indice - 1.2) / (1.6 - 1.2);
+
+  modelo = t < 0.35 ? "Estandar+" : "Crecimiento";
+
+  baseMensual = interpolar(
+    BASE.crecimiento.mensual,
+    BASE.premium.mensual,
+    t
+  );
+
+  baseSetup = interpolar(
+    BASE.crecimiento.setup,
+    BASE.premium.setup,
+    t
+  );
+}
 
 
-    if (indice >= 1.6) {
-      modelo = "Premium";
-      setup = Math.round(800 * indice);
-      mensual = Math.round(149 * indice);
-    } else if (indice >= 1.2) {
-      modelo = "Crecimiento";
-      setup = Math.round(420 * indice);
-      mensual = Math.round(79 * indice);
-    }
+
+// Aplicación final del índice
+let mensual = Math.round(baseMensual * indice);
+let setup = Math.round(baseSetup * indice);
 // ===== PRECIO BASE (NO SE COMUNICA AL CLIENTE) =====
     const mensualBase = mensual;
     const setupBase = setup; // reservado para modo estándar
@@ -509,79 +640,172 @@ document.getElementById("btnPdf").onclick = () => {
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Propuesta de Pricing</title>
-  <style>
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      padding: 50px;
-      color: #111;
-    }
+<meta charset="UTF-8">
+<title>Propuesta Estratégica</title>
 
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-    }
+<style>
+  * {
+    box-sizing: border-box;
+  }
 
-    .header img {
-      max-width: 160px;
-      margin-bottom: 20px;
-    }
+  body {
+    font-family: Inter, Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+    color: #111;
+    background: #ffffff;
+  }
 
-    h1 {
-      color: #e10600;
-      margin-bottom: 10px;
-    }
+  .page {
+    padding: 60px;
+  }
 
-    .subtitle {
-      font-size: 14px;
-      color: #555;
-      margin-bottom: 40px;
-    }
+  /* ===== PORTADA ===== */
+  .cover {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    page-break-after: always;
+  }
 
-    pre {
-      white-space: pre-wrap;
-      font-size: 14px;
-      line-height: 1.6;
-    }
+  .cover img {
+    max-width: 160px;
+    margin-bottom: 40px;
+  }
 
-    .footer {
-      margin-top: 50px;
-      font-size: 12px;
-      color: #555;
-      border-top: 1px solid #ddd;
-      padding-top: 20px;
-    }
-  </style>
+  .cover h1 {
+    font-size: 38px;
+    margin-bottom: 14px;
+  }
+
+  .cover h2 {
+    font-size: 18px;
+    font-weight: 400;
+    color: #555;
+    max-width: 520px;
+    line-height: 1.5;
+  }
+
+  .cover .meta {
+    margin-top: 40px;
+    font-size: 14px;
+    color: #666;
+  }
+
+  /* ===== BLOQUES ===== */
+  .section {
+    margin-bottom: 50px;
+  }
+
+  .section h3 {
+    font-size: 20px;
+    margin-bottom: 16px;
+    border-left: 4px solid #e10600;
+    padding-left: 12px;
+  }
+
+  .box {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 20px;
+    line-height: 1.6;
+    font-size: 14px;
+  }
+
+  /* ===== PRECIO ===== */
+  .price-box {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+  }
+
+  .price {
+    flex: 1;
+    background: #111;
+    color: #fff;
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+  }
+
+  .price span {
+    display: block;
+    font-size: 13px;
+    opacity: 0.7;
+  }
+
+  .price strong {
+    font-size: 32px;
+  }
+
+  /* ===== FOOTER ===== */
+  .footer {
+    margin-top: 60px;
+    font-size: 12px;
+    color: #666;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
+  }
+
+  pre {
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+</style>
 </head>
+
 <body>
 
-  <div class="header">
-    <img src="assets/logo.png" alt="Logo">
-    <h1>Propuesta Estratégica de Pricing</h1>
-    <div class="subtitle">
-      Análisis personalizado para optimizar ingresos y ocupación
+<!-- PORTADA -->
+<div class="cover">
+  <img src="assets/logo.png" alt="Logo">
+  <h1>Propuesta Estratégica de Pricing</h1>
+  <h2>Análisis personalizado para optimizar ocupación e ingresos entre semana</h2>
+  <div class="meta">
+    Documento confidencial · Uso exclusivo del cliente
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="section">
+    <h3>Resumen ejecutivo</h3>
+    <div class="box">
+      Este documento presenta una propuesta estratégica basada en el
+      potencial real del restaurante, su posicionamiento y su capacidad
+      de retorno económico entre semana.
     </div>
   </div>
 
-  <pre>${texto}</pre>
+  <div class="section">
+    <h3>Propuesta económica</h3>
+    <div class="box">
+      <pre>${texto}</pre>
+    </div>
+  </div>
 
   <div class="footer">
     ${modoCierre === "inmediato" ? `
-<strong>Condiciones de activación inmediata:</strong><br>
-Esta propuesta incluye una tarifa reducida por activación inmediata.<br>
-No incluye coste de setup inicial.<br>
-La condición está sujeta a confirmación en el momento de la activación.
-` : `
-<strong>Condiciones de activación estándar:</strong><br>
-Esta propuesta incluye un setup inicial de puesta en marcha.<br>
-La mensualidad se mantiene estable durante el periodo acordado.
-`}
+    <strong>Condiciones de activación inmediata</strong><br>
+    Tarifa reducida aplicada por activación inmediata.<br>
+    Sin coste de setup inicial.
+    ` : `
+    <strong>Condiciones de activación estándar</strong><br>
+    Incluye setup inicial de puesta en marcha.<br>
+    Mensualidad estable durante el periodo acordado.
+    `}
   </div>
+
+</div>
 
 </body>
 </html>
-  `);
+`);
 
   w.document.close();
   w.focus();
