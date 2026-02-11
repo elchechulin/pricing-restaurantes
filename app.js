@@ -44,7 +44,9 @@ let forzarModo = false; // "inmediato" | "estandar"
 let estadoCierre = "abierto"; // "abierto" | "cerrado"
 let volverAGuiaTrasCalculo = false;
 
-let estadoLlamada = "seleccion_rol";
+let estadoLlamada = "inicio_universal";
+// Estado especial cuando ME PASAN con el dueño
+let vieneDueno = false;
 // ===============================
 // ONBOARDING (POST-CIERRE)
 // ===============================
@@ -620,8 +622,14 @@ resultadoEl.textContent += `
 ${textoCierre}
 `;
     // Mostrar botón de consecuencia tras el cálculo
-    document.getElementById("btnModoEstandar").style.display = "block";
-document.getElementById("btnCierreFinal").style.display = "block";
+    if (estadoCierre !== "cerrado") {
+  document.getElementById("btnModoEstandar").style.display = "block";
+  document.getElementById("btnCierreFinal").style.display = "block";
+} else {
+  document.getElementById("btnModoEstandar").style.display = "none";
+  document.getElementById("btnCierreFinal").style.display = "none";
+}
+
 document.getElementById("btnCrearEnlaceInmediato").style.display = "none";
 document.getElementById("btnCrearEnlaceSetup").style.display = "none";
 /* ===============================
@@ -1147,7 +1155,6 @@ let historialLlamada = [];
 // Contenedor del contenido del modal
 const modalBody = document.querySelector("#modalLlamadas .modal-body");
 const btnAtras = document.getElementById("modalAtras");
-// Botón atrás (NECESARIO ANTES DE USARLO)
 
 function actualizarBotonAtras() {
   if (historialLlamada.length > 0) {
@@ -1159,24 +1166,225 @@ function actualizarBotonAtras() {
 // Renderiza el paso actual
 function renderPasoLlamada() {
   if (!modalBody) return;
+  
+  if (estadoLlamada === "inicio_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
 
-if (estadoLlamada === "seleccion_rol") {
-    modalBody.innerHTML = `
-      <p><strong>📞 ¿Quién contesta el teléfono?</strong></p>
+    <p>
+      “Hola, una consulta muy rápida sobre el restaurante.”
+    </p>
 
-      <button class="btn-respuesta" data-siguiente="trabajador_inicio">
-        👨‍🍳 Trabajador / camarero
-      </button>
+    <p>
+      “Antes de seguir, dime una cosa rápida:
+      entre semana, ¿soléis estar llenos
+      o hay huecos?”
+    </p>
 
-      <button class="btn-respuesta" data-siguiente="encargado_inicio">
-        👔 Encargado / gerente
-      </button>
+    <p><strong>¿Qué responde?</strong></p>
 
-      <button class="btn-respuesta" data-siguiente="dueno_inicio">
-  👑 Dueño
+    <button class="btn-respuesta" data-siguiente="hay_huecos_universal">
+      😐 “Hay huecos”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="todo_lleno_universal">
+      👍 “Vamos bastante llenos”
+    </button>
+  `;
+}
+
+if (estadoLlamada === "todo_lleno_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
+
+    <p>
+      “Perfecto. Te hago una pregunta muy directa.”
+    </p>
+
+    <p>
+      “Cuando dices que vais llenos,
+      ¿hablamos de todos los días entre semana
+      o solo jueves y viernes?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="hay_huecos_universal">
+      😐 “Bueno… algunos días flojean”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="cierre_no">
+      👍 “No, vamos realmente llenos”
+    </button>
+  `;
+}
+
+if (estadoLlamada === "hay_huecos_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
+
+    <p>
+      “Vale. Entonces estamos hablando de mesas
+      que ahora mismo se podrían estar facturando
+      y no se están facturando.”
+    </p>
+
+    <p>
+      “Dime una cosa muy directa:
+      ¿esto pasa todas las semanas
+      o solo en momentos puntuales?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="problema_recurrente_universal">
+      📉 “Es bastante habitual”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="problema_leve_universal">
+      😐 “Solo a veces”
+    </button>
+  `;
+}
+
+if (estadoLlamada === "problema_recurrente_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
+
+    <p>
+      “Entonces no estamos hablando de algo puntual.
+      Estamos hablando de ingresos
+      que se están dejando encima de la mesa
+      todas las semanas.”
+    </p>
+
+    <p>
+      “Si esto lleva pasando meses,
+      la pregunta no es si se puede mejorar,
+      sino cuánto dinero se ha dejado de facturar ya.”
+    </p>
+
+    <p>
+      “Déjame hacerte una pregunta muy directa:
+      ¿ahora mismo estás haciendo algo específico
+      para corregirlo?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="no_estan_haciendo_nada_universal">
+      ❌ “No realmente”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="estan_probando_algo_universal">
+      🔄 “Sí, estamos probando cosas”
+    </button>
+    
+    <button class="btn-respuesta" data-siguiente="transicion_dueno_sugerida">
+  👑 Esto debería verlo el dueño
 </button>
-    `;
-  }
+  `;
+}
+
+if (estadoLlamada === "no_estan_haciendo_nada_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
+
+    <p>
+      “Entonces el problema no es la demanda.
+      Es que no hay un sistema
+      activamente corrigiéndolo.”
+    </p>
+
+    <p>
+      “Eso significa que cada semana
+      se siguen perdiendo mesas
+      sin que nadie lo esté midiendo.”
+    </p>
+
+    <p>
+      “Déjame hacer un cálculo rápido
+      para ver si estamos hablando
+      de algo relevante o no.”
+    </p>
+
+    <p><strong>👉 AHORA:</strong></p>
+    <p>
+      Rellena los datos y pulsa <strong>Calcular precio</strong>.
+    </p>
+    
+    <button class="btn-respuesta" data-siguiente="transicion_dueno_sugerida">
+  👑 Esto debería verlo el dueño
+</button>
+
+    <button class="btn-respuesta" data-siguiente="fin_encargado_calculo">
+      ✅ Vale
+    </button>
+  `;
+}
+
+if (estadoLlamada === "estan_probando_algo_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
+
+    <p>
+      “Perfecto. Eso es buena señal.”
+    </p>
+
+    <p>
+      “La pregunta es:
+      ¿lo que estáis probando
+      está generando reservas medibles
+      o solo visibilidad?”
+    </p>
+
+    <p>
+      “Déjame hacer un cálculo rápido
+      para compararlo con números reales.”
+    </p>
+
+    <p><strong>👉 AHORA:</strong></p>
+    <p>
+      Rellena los datos y pulsa <strong>Calcular precio</strong>.
+    </p>
+    
+    <button class="btn-respuesta" data-siguiente="transicion_dueno_sugerida">
+  👑 Esto debería verlo el dueño
+</button>
+
+    <button class="btn-respuesta" data-siguiente="fin_encargado_calculo">
+      ✅ Entendido
+    </button>
+  `;
+}
+
+if (estadoLlamada === "problema_leve_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
+
+    <p>
+      “Perfecto. Entonces no es grave,
+      pero tampoco está optimizado.”
+    </p>
+
+    <p>
+      “Normalmente cuando dicen ‘a veces’,
+      significa que hay margen,
+      solo que no se está midiendo.”
+    </p>
+
+    <p>
+      “Déjame hacer un cálculo rápido
+      para ver si estamos hablando
+      de algo pequeño
+      o de dinero relevante.”
+    </p>
+
+    <p><strong>👉 AHORA:</strong></p>
+    <p>
+      Rellena los datos del restaurante
+      y pulsa <strong>Calcular precio</strong>.
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="fin_encargado_calculo">
+      ✅ Vale
+    </button>
+  `;
+}
   
   if (estadoLlamada === "encargado_inicio") {
   modalBody.innerHTML = `
@@ -1283,6 +1491,23 @@ if (estadoLlamada === "dueno_hay_huecos") {
     <button class="btn-respuesta" data-siguiente="fin_encargado_calculo">
       ✅ Vale
     </button>
+  `;
+}
+if (estadoLlamada === "dueno_todo_lleno") {
+  modalBody.innerHTML = `
+    <p>
+      Perfecto entonces.
+    </p>
+
+    <p>
+      Si entre semana ya vais llenos,
+      no tiene sentido tocar nada ahora.
+    </p>
+
+    <p>
+      Si en algún momento baja la ocupación,
+      lo revisamos sin problema.
+    </p>
   `;
 }
 if (estadoLlamada === "dueno_corte") {
@@ -1443,6 +1668,10 @@ if (estadoLlamada === "encargado_interes") {
     <button class="btn-respuesta" data-siguiente="puente_calculo">
       ➡️ “Vale, dime”
     </button>
+
+    <button class="btn-respuesta" data-siguiente="transicion_dueno">
+      👑 Me pasan con el dueño
+    </button>
   `;
 }
 if (estadoLlamada === "puente_calculo") {
@@ -1492,27 +1721,47 @@ if (estadoLlamada === "fin_encargado_calculo") {
 }
 if (estadoLlamada === "post_precio_opciones") {
   modalBody.innerHTML = `
-    <p><strong>🗣️ DI ESTO:</strong></p>
+    <p><strong>🗣️ DI ESTO (control total):</strong></p>
 
     <p>
-      “Vale, con estos números encima de la mesa,
-      ahora lo importante es decidir si lo activamos
-      o no.”
+      “Vale. Entonces ya tenemos claro el número.”
     </p>
 
-    <p><strong>¿Qué responde?</strong></p>
+    <p>
+      “La única pregunta real ahora mismo es:
+      ¿prefieres seguir como estás
+      o empezar a corregirlo desde esta semana?”
+    </p>
+
+    <p>
+      (Silencio. Deja que responda.)
+    </p>
+
+    <p><strong>Si duda, añade:</strong></p>
+
+    <p>
+      “Porque si dentro de 30 días sigues con huecos,
+      el coste no habrá sido este,
+      habrá sido lo que hayas dejado de facturar.”
+    </p>
+
+    <p><strong>¿Qué decide?</strong></p>
 
     <button class="btn-respuesta" data-siguiente="cierre_si">
-      ✅ “Sí, adelante”
+      ✅ “Lo activamos”
     </button>
 
     <button class="btn-respuesta" data-siguiente="cierre_dudas">
-      🤔 “Déjamelo pensar”
+      🤔 “Déjame pensarlo”
     </button>
 
     <button class="btn-respuesta" data-siguiente="cierre_no">
       ❌ “Ahora no”
     </button>
+    
+    <button class="btn-respuesta" data-siguiente="objecion_universal">
+  🧠 Objeción inesperada
+</button>
   `;
 }
 if (estadoLlamada === "cierre_si") {
@@ -1582,6 +1831,111 @@ if (estadoLlamada === "cierre_no") {
       y si más adelante quieres revisarlo,
       lo vemos con calma.
     </p>
+  `;
+}
+if (estadoLlamada === "objecion_universal") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO (bloque anti-bloqueo):</strong></p>
+
+    <p>
+      “Perfecto, lo respeto.”
+    </p>
+
+    <p>
+      “Solo para ubicarme mejor,
+      ¿es algo de presupuesto,
+      de prioridad
+      o de que no ves claro el retorno?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="objecion_presupuesto">
+      💰 “Es presupuesto”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="objecion_prioridad">
+      ⏳ “No es prioridad”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="objecion_retorno">
+      📉 “No veo claro retorno”
+    </button>
+  `;
+}
+if (estadoLlamada === "objecion_presupuesto") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO (presupuesto):</strong></p>
+
+    <p>
+      “Perfecto. Entonces no es que no quieras,
+      es que ahora mismo no te encaja el número.”
+    </p>
+
+    <p>
+      “Déjame preguntarte algo muy concreto:
+      si con una sola mesa adicional al mes
+      esto queda amortizado,
+      ¿sigue siendo un problema de presupuesto?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="cierre_si">
+      ✅ “Visto así, adelante”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="cierre_no">
+      ❌ “Prefiero dejarlo”
+    </button>
+  `;
+}
+if (estadoLlamada === "objecion_prioridad") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO (prioridad):</strong></p>
+
+    <p>
+      “Perfecto. Entonces no es que no funcione,
+      es que ahora mismo no lo estás priorizando.”
+    </p>
+
+    <p>
+      “Solo te hago una pregunta:
+      si dentro de tres meses sigues
+      con huecos entre semana,
+      ¿seguiría sin ser prioridad?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="cierre_si">
+      ✅ “Lo activamos”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="cierre_no">
+      ❌ “Lo dejamos”
+    </button>
+  `;
+}
+if (estadoLlamada === "objecion_retorno") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO (retorno):</strong></p>
+
+    <p>
+      “Perfecto. Entonces la duda no es el precio,
+      es si realmente va a generar mesas.”
+    </p>
+
+    <p>
+      “Por eso precisamente hemos hecho el cálculo.”
+    </p>
+
+    <p>
+      “Si no generase al menos una mesa adicional al mes,
+      no tendría sentido ni para ti ni para nosotros.”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="cierre_si">
+      ✅ “Probamos”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="cierre_no">
+      ❌ “No lo veo”
+    </button>
   `;
 }
   if (estadoLlamada === "trabajador_inicio") {
@@ -1670,21 +2024,162 @@ if (estadoLlamada === "trabajador_fin") {
     </p>
   `;
 }
+
+if (estadoLlamada === "transicion_dueno") {
+  vieneDueno = true;
+
+  modalBody.innerHTML = `
+    <p><strong>🧠 CAMBIO DE CONTEXTO</strong></p>
+
+    <p>
+      Te pasan con el dueño ahora mismo.
+    </p>
+
+    <p>
+      No repitas nada anterior.
+      Entra directo a ocupación.
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="dueno_reentrada">
+      ➡️ Continuar con el dueño
+    </button>
+  `;
+}
+
+if (estadoLlamada === "transicion_dueno_sugerida") {
+  vieneDueno = true;
+
+  modalBody.innerHTML = `
+    <p><strong>🧠 CAMBIO ESTRATÉGICO</strong></p>
+
+    <p>
+      Si esto es algo recurrente,
+      lo más lógico es que lo vea quien toma decisiones.
+    </p>
+
+    <p>
+      No es un tema operativo.
+      Es un tema de ingresos.
+    </p>
+
+    <p>
+      ¿Te parece si me pasas con el dueño
+      y se lo explico en 30 segundos?
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="dueno_reentrada_directa">
+      👑 Me pasan con el dueño
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="puente_calculo">
+      📊 Prefiere que lo calculemos ahora
+    </button>
+  `;
+}
+
+if (estadoLlamada === "dueno_reentrada") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO:</strong></p>
+
+    <p>
+      “Hola, soy Jesús.
+      Me acaban de pasar contigo.”
+    </p>
+
+    <p>
+      “Voy directo:
+      entre semana,
+      ¿el restaurante suele llenarse
+      o hay mesas que se quedan vacías?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="dueno_hay_huecos">
+      😐 “Hay huecos”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="dueno_todo_lleno">
+      👍 “Vamos bien”
+    </button>
+  `;
+}
+
+if (estadoLlamada === "dueno_reentrada_directa") {
+  modalBody.innerHTML = `
+    <p><strong>🗣️ DI ESTO (reinicio limpio):</strong></p>
+
+    <p>
+      “Hola, soy Jesús.
+      Te llamo muy rápido por un tema concreto.”
+    </p>
+
+    <p>
+      “Voy directo:
+      entre semana,
+      ¿el restaurante suele llenarse
+      o hay mesas que se quedan vacías?”
+    </p>
+
+    <button class="btn-respuesta" data-siguiente="dueno_hay_huecos">
+      😐 “Hay huecos”
+    </button>
+
+    <button class="btn-respuesta" data-siguiente="dueno_todo_lleno">
+      👍 “Vamos bien”
+    </button>
+  `;
+}
+
+// Añadir botón global de cambio a dueño al FINAL del render
+if (
+  !estadoLlamada.startsWith("dueno") &&
+  !estadoLlamada.startsWith("cierre") &&
+  estadoLlamada !== "transicion_dueno" &&
+  estadoLlamada !== "transicion_dueno_sugerida" &&
+  estadoLlamada !== "fin_encargado_calculo" &&
+  estadoLlamada !== "post_precio_opciones"
+) {
+  const btnCambioDueno = document.createElement("button");
+btnCambioDueno.textContent = "👑 Me pasan con el dueño ahora";
+btnCambioDueno.className = "btn-respuesta";
+btnCambioDueno.dataset.siguiente = "dueno_reentrada_directa";
+btnCambioDueno.style.marginTop = "14px";
+btnCambioDueno.style.background = "#111";
+btnCambioDueno.style.color = "#fff";
+
+modalBody.appendChild(btnCambioDueno);
+}
   // Asignar eventos a botones
   modalBody.querySelectorAll(".btn-respuesta").forEach(btn => {
-  btn.onclick = () => {
-    // Guardar estado actual en el historial
-    historialLlamada.push(estadoLlamada);
-if (estadoLlamada === "puente_calculo") {
-  volverAGuiaTrasCalculo = true;
-  historialLlamada = []; // reset lógico
-  cerrarModalLlamadasSeguro();
-}
-    // Avanzar al siguiente estado
-    estadoLlamada = btn.dataset.siguiente;
+  btn.addEventListener("click", () => {
 
-    renderPasoLlamada();
-  };
+    // Si tiene data-siguiente, usamos flujo normal
+    if (btn.dataset.siguiente) {
+
+      historialLlamada.push(estadoLlamada);
+
+      if (estadoLlamada === "puente_calculo") {
+        volverAGuiaTrasCalculo = true;
+        historialLlamada = [];
+        cerrarModalLlamadasSeguro();
+        return;
+      }
+
+      estadoLlamada = btn.dataset.siguiente;
+
+// 🔴 Si es cierre, activar lógica real
+if (estadoLlamada === "cierre_si") {
+  estadoCierre = "cerrado";
+  onboardingActivo = true;
+  mostrarOnboarding();
+  document.getElementById("btnCrearEnlaceInmediato").style.display = "block";
+  document.getElementById("btnCrearEnlaceSetup").style.display = "none";
+}
+
+renderPasoLlamada();
+return;
+    }
+
+  });
 });
 actualizarBotonAtras();
 }
@@ -1738,7 +2233,7 @@ cerrarModalLlamadas.onclick = () => {
 if (btnAbrirLlamadas) {
 btnAbrirLlamadas.onclick = () => {
   historialLlamada = [];
-  estadoLlamada = "seleccion_rol";
+  estadoLlamada = "inicio_universal";
   renderPasoLlamada();
   modalLlamadas.style.display = "flex";
   document.body.classList.add("modal-abierto");
