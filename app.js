@@ -1516,8 +1516,8 @@ if (estadoLlamada === "todo_lleno_universal") {
 
     <p>
       “Cuando dices que vais llenos,
-      ¿hablamos de todos los días entre semana
-      o solo jueves y viernes?”
+      ¿hablamos de lunes a jueves también
+      o solo viernes y fin de semana?”
     </p>
 
     <button class="btn-respuesta" data-siguiente="hay_huecos_universal">
