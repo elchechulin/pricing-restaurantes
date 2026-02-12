@@ -16,7 +16,14 @@ function abrirModalLink(url) {
 
 function cerrarModalPago() {
   modalLink.style.display = "none";
+
+  if (
+  modalLlamadas.style.display !== "flex" &&
+  modalLink.style.display !== "flex" &&
+  modalObjeciones.style.display !== "flex"
+) {
   document.body.classList.remove("modal-abierto");
+}
 }
 
 cerrarModalLink.onclick = cerrarModalPago;
@@ -48,6 +55,295 @@ let estadoLlamada = "inicio_universal";
 // Estado especial cuando ME PASAN con el dueño
 let vieneDueno = false;
 // ===============================
+// SISTEMA DE OBJECIONES · BASE DE DATOS
+// ===============================
+
+const OBJECIONES_DB = [
+
+/* ===============================
+   PRECIO
+=============================== */
+
+{
+  id: "precio_caro",
+  texto: "Es caro",
+  categoria: "precio",
+  frecuencia: 10,
+  prioridad: 1,
+  palabrasClave: ["caro","precio","coste","dinero"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Perfecto.
+Entonces no es que no quieras,
+es que ahora mismo no te encaja el número.
+
+Si con una sola mesa adicional al mes
+esto queda amortizado,
+¿sigue siendo un problema de presupuesto?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "no_tengo_presupuesto",
+  texto: "No tengo presupuesto ahora",
+  categoria: "precio",
+  frecuencia: 8,
+  prioridad: 1,
+  palabrasClave: ["presupuesto","ahora no puedo"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Entonces no es que no te interese,
+es que ahora mismo no lo tenías previsto.
+
+¿Si esto se pagase solo con una mesa más,
+seguiría siendo un problema?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "ya_pago_marketing",
+  texto: "Ya pago marketing",
+  categoria: "precio",
+  frecuencia: 7,
+  prioridad: 2,
+  palabrasClave: ["ya tengo","agencia","marketing"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Perfecto.
+Entonces la pregunta no es si pagas,
+sino si te está llenando mesas entre semana.”
+`,
+  redireccion: "cierre_dudas"
+},
+
+/* ===============================
+   PRIORIDAD
+=============================== */
+
+{
+  id: "no_es_prioridad",
+  texto: "Ahora no es prioridad",
+  categoria: "prioridad",
+  frecuencia: 9,
+  prioridad: 1,
+  palabrasClave: ["prioridad","más adelante"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Entonces no es que no funcione,
+es que ahora mismo no lo estás priorizando.
+
+Si dentro de tres meses sigues igual,
+¿seguiría sin ser prioridad?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "no_es_buen_momento",
+  texto: "No es buen momento",
+  categoria: "prioridad",
+  frecuencia: 8,
+  prioridad: 2,
+  palabrasClave: ["momento","ahora no"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Entiendo.
+Solo una pregunta:
+¿cuándo suele ser buen momento
+para dejar de perder mesas?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "estoy_liado",
+  texto: "Estoy muy liado",
+  categoria: "prioridad",
+  frecuencia: 6,
+  prioridad: 2,
+  palabrasClave: ["liado","tiempo"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Precisamente por eso.
+Esto no te quita tiempo,
+te devuelve ingresos.”
+`,
+  redireccion: "cierre_dudas"
+},
+
+/* ===============================
+   RETORNO
+=============================== */
+
+{
+  id: "no_veo_retorno",
+  texto: "No veo claro el retorno",
+  categoria: "retorno",
+  frecuencia: 8,
+  prioridad: 1,
+  palabrasClave: ["retorno","resultado"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Entonces la duda no es el precio,
+es si realmente va a generar mesas.
+
+Por eso hemos hecho el cálculo.”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "no_estoy_seguro",
+  texto: "No estoy seguro de que funcione",
+  categoria: "retorno",
+  frecuencia: 7,
+  prioridad: 2,
+  palabrasClave: ["seguro","funciona"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Si fuese seguro al 100%,
+no sería una inversión,
+sería una máquina de imprimir dinero.
+
+La pregunta es:
+¿vale la pena probarlo?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "ya_lo_intente",
+  texto: "Ya probé algo parecido",
+  categoria: "retorno",
+  frecuencia: 6,
+  prioridad: 2,
+  palabrasClave: ["probé","ya hice"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Perfecto.
+¿Funcionó o solo generó visibilidad?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+/* ===============================
+   DUDAS
+=============================== */
+
+{
+  id: "dejame_pensar",
+  texto: "Déjamelo pensar",
+  categoria: "dudas",
+  frecuencia: 10,
+  prioridad: 1,
+  palabrasClave: ["pensar","verlo"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Perfecto.
+Solo para saber:
+¿qué parte quieres pensar?
+¿El número o el riesgo?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "hablar_con_socio",
+  texto: "Tengo que hablarlo con mi socio",
+  categoria: "dudas",
+  frecuencia: 7,
+  prioridad: 2,
+  palabrasClave: ["socio","hablar"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Perfecto.
+¿Lo hablamos los tres y lo dejamos claro?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "mandame_info",
+  texto: "Mándame información",
+  categoria: "dudas",
+  frecuencia: 6,
+  prioridad: 2,
+  palabrasClave: ["info","email"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Claro.
+¿Te la envío para decidir
+o para archivarla?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "no_me_interesa",
+  texto: "No me interesa",
+  categoria: "dudas",
+  frecuencia: 8,
+  prioridad: 1,
+  palabrasClave: ["no interesa"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Perfecto.
+¿No te interesa generar más mesas
+o no te interesa hacerlo de esta forma?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "estamos_llenos",
+  texto: "Estamos llenos",
+  categoria: "retorno",
+  frecuencia: 5,
+  prioridad: 2,
+  palabrasClave: ["llenos"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“¿Todos los días entre semana
+o solo fines de semana?”
+`,
+  redireccion: "cierre_dudas"
+},
+
+{
+  id: "ya_tengo_agencia",
+  texto: "Ya tengo agencia",
+  categoria: "retorno",
+  frecuencia: 7,
+  prioridad: 2,
+  palabrasClave: ["agencia"],
+  respuesta: `
+🗣️ DI ESTO:
+
+“Perfecto.
+Entonces solo necesito saber
+si te están llenando mesas entre semana.”
+`,
+  redireccion: "cierre_dudas"
+}
+
+];
+// ===============================
 // ONBOARDING (POST-CIERRE)
 // ===============================
 let onboardingActivo = false;
@@ -67,9 +363,8 @@ let datosOnboarding = {
   btnVolverPresupuesto.onclick = () => {
   modalLlamadas.style.display = "none";
   document.body.classList.remove("modal-abierto");
+  document.getElementById("btnObjecionesFlotante").style.display = "none";
   btnVolverPresupuesto.style.display = "none";
-
-  // 👇 VOLVER A MOSTRAR CONTINUAR GUÍA
   document.getElementById("btnContinuarGuia").style.display = "block";
 };
 // ===============================
@@ -78,6 +373,7 @@ let datosOnboarding = {
 function cerrarModalLlamadasSeguro() {
   modalLlamadas.style.display = "none";
   document.body.classList.remove("modal-abierto");
+  document.getElementById("btnObjecionesFlotante").style.display = "none";
 }
   /* ===============================
      GASTO MEDIO 5€ → 200€
@@ -2191,13 +2487,12 @@ const btnContinuarGuia = document.getElementById("btnContinuarGuia");
 
 btnContinuarGuia.onclick = () => {
   btnContinuarGuia.style.display = "none";
-
   volverAGuiaTrasCalculo = false;
 
   modalLlamadas.style.display = "flex";
   document.body.classList.add("modal-abierto");
+  document.getElementById("btnObjecionesFlotante").style.display = "flex";
 
-  // 👇 AÑADE ESTA LÍNEA
   btnVolverPresupuesto.style.display = "inline-block";
 
   renderPasoLlamada();
@@ -2228,15 +2523,238 @@ btnAtras.onclick = () => {
 cerrarModalLlamadas.onclick = () => {
   modalLlamadas.style.display = "none";
   document.body.classList.remove("modal-abierto");
+  document.getElementById("btnObjecionesFlotante").style.display = "none";
 };
 // Abrir modal
 if (btnAbrirLlamadas) {
-btnAbrirLlamadas.onclick = () => {
-  historialLlamada = [];
-  estadoLlamada = "inicio_universal";
-  renderPasoLlamada();
-  modalLlamadas.style.display = "flex";
-  document.body.classList.add("modal-abierto");
+  btnAbrirLlamadas.onclick = () => {
+    historialLlamada = [];
+    estadoLlamada = "inicio_universal";
+    renderPasoLlamada();
+    modalLlamadas.style.display = "flex";
+    document.getElementById("btnObjecionesFlotante").style.display = "flex";
+    document.body.classList.add("modal-abierto");
+  };
+}
+/* ===============================
+   MOTOR · RENDER OBJECIONES
+=============================== */
+
+const modalObjecionesBody = document.getElementById("modalObjecionesBody");
+/* ===============================
+   MOTOR · RENDER OBJECIONES (LIMPIO)
+=============================== */
+
+let filtroCategoria = "todas";
+let objecionesInicializadas = false;
+let vistaActualObjeciones = "lista"; 
+// "lista" | "detalle"
+
+function renderObjeciones() {
+
+  if (!objecionesInicializadas) {
+    renderEstructuraObjeciones();
+    objecionesInicializadas = true;
+  }
+
+  renderListaObjeciones();
+}
+
+function renderEstructuraObjeciones() {
+
+  modalObjecionesBody.innerHTML = `
+  
+  <div class="obj-header">
+    <h3>🔥 OBJECIONES Y SUJECIONES</h3>
+    <button class="obj-search" id="btnActivarBusqueda">🔍</button>
+  </div>
+
+  <div id="buscadorContainer" style="display:none; margin-bottom:12px;">
+    <input 
+      type="text" 
+      id="inputBusquedaObjeciones" 
+      placeholder="Buscar objeción..."
+      style="
+        width:100%;
+        padding:8px 10px;
+        border-radius:10px;
+        border:none;
+        font-size:13px;
+      "
+    />
+  </div>
+
+  <div class="categorias-scroll">
+    <button class="categoria-pill" data-filtro="todas">TODAS</button>
+    <button class="categoria-pill" data-filtro="precio">PRECIO</button>
+    <button class="categoria-pill" data-filtro="dudas">DUDAS</button>
+    <button class="categoria-pill" data-filtro="prioridad">PRIORIDAD</button>
+    <button class="categoria-pill" data-filtro="retorno">RETORNO</button>
+  </div>
+
+  <div id="listaObjeciones"></div>
+  `;
+
+  asignarEventosCategorias();
+  activarBuscador();
+}
+
+function renderListaObjeciones(listaPersonalizada = null) {
+
+  let lista = listaPersonalizada ? listaPersonalizada : [...OBJECIONES_DB];
+
+  if (!listaPersonalizada && filtroCategoria !== "todas") {
+    lista = lista.filter(o => o.categoria === filtroCategoria);
+  }
+
+  lista.sort((a, b) => b.frecuencia - a.frecuencia);
+
+  const top10 = lista.slice(0, 10);
+
+  const contenedor = document.getElementById("listaObjeciones");
+
+  contenedor.innerHTML = top10.map(obj => `
+    <button class="btn-objecion" data-id="${obj.id}">
+      ${obj.texto}
+    </button>
+  `).join("");
+
+  actualizarCategoriaActiva();
+  asignarEventosObjecionIndividual();
+}
+
+function asignarEventosCategorias() {
+  modalObjecionesBody.querySelectorAll("[data-filtro]").forEach(btn => {
+    btn.onclick = () => {
+      filtroCategoria = btn.dataset.filtro;
+      renderListaObjeciones();
+    };
+  });
+}
+
+function actualizarCategoriaActiva() {
+  modalObjecionesBody.querySelectorAll(".categoria-pill").forEach(btn => {
+    btn.classList.remove("activa");
+    if (btn.dataset.filtro === filtroCategoria) {
+      btn.classList.add("activa");
+    }
+  });
+}
+
+function asignarEventosObjecionIndividual() {
+  modalObjecionesBody.querySelectorAll("[data-id]").forEach(btn => {
+    btn.onclick = () => {
+      const obj = OBJECIONES_DB.find(o => o.id === btn.dataset.id);
+      if (!obj) return;
+
+      vistaActualObjeciones = "detalle";
+
+      modalObjecionesBody.innerHTML = `
+        <div class="obj-header">
+          <button id="btnVolverListaObjeciones" class="btn-volver-obj">
+            ← Volver
+          </button>
+        </div>
+
+        <div class="obj-detalle">
+          <p>${obj.respuesta}</p>
+
+          <button class="btn-objecion" id="btnAplicarRedireccion">
+            ➡️ Aplicar en llamada
+          </button>
+        </div>
+      `;
+
+      document.getElementById("btnVolverListaObjeciones").onclick = () => {
+  vistaActualObjeciones = "lista";
+  objecionesInicializadas = false;   // 🔴 fuerza reconstrucción limpia
+  renderObjeciones();
 };
+
+      document.getElementById("btnAplicarRedireccion").onclick = () => {
+  if (obj.redireccion) {
+    estadoLlamada = obj.redireccion;
+    renderPasoLlamada();
+
+    // 🔴 RESET COMPLETO SISTEMA OBJECIONES
+    vistaActualObjeciones = "lista";
+    objecionesInicializadas = false;
+
+    modalObjeciones.style.display = "none";
+  }
+};
+    };
+  });
+}
+
+function activarBuscador() {
+
+  const btnBuscar = document.getElementById("btnActivarBusqueda");
+  const buscadorContainer = document.getElementById("buscadorContainer");
+  const inputBusqueda = document.getElementById("inputBusquedaObjeciones");
+
+  btnBuscar.onclick = () => {
+    buscadorContainer.style.display =
+      buscadorContainer.style.display === "none" ? "block" : "none";
+    inputBusqueda.focus();
+  };
+
+  inputBusqueda.oninput = () => {
+
+    const valor = inputBusqueda.value.toLowerCase().trim();
+
+    let listaFiltrada = OBJECIONES_DB.filter(obj => {
+      const coincideTexto = obj.texto.toLowerCase().includes(valor);
+      const coincideKeywords = obj.palabrasClave.some(k =>
+        k.toLowerCase().includes(valor)
+      );
+      return coincideTexto || coincideKeywords;
+    });
+
+    if (filtroCategoria !== "todas") {
+      listaFiltrada = listaFiltrada.filter(
+        o => o.categoria === filtroCategoria
+      );
+    }
+
+    renderListaObjeciones(listaFiltrada);
+  };
+}
+/* ===============================
+   MODAL · OBJECIONES (OPEN / CLOSE)
+=============================== */
+
+const btnObjecionesFlotante = document.getElementById("btnObjecionesFlotante");
+const modalObjeciones = document.getElementById("modalObjeciones");
+const cerrarModalObjeciones = document.getElementById("cerrarModalObjeciones");
+
+// Abrir modal de objeciones
+if (btnObjecionesFlotante) {
+  btnObjecionesFlotante.onclick = () => {
+
+    // 🔴 Siempre reconstruir desde cero
+    vistaActualObjeciones = "lista";
+    objecionesInicializadas = false;
+
+    renderObjeciones();
+    modalObjeciones.style.display = "flex";
+    document.body.classList.add("modal-abierto");
+  };
+}
+
+// Cerrar modal de objeciones
+if (cerrarModalObjeciones) {
+  cerrarModalObjeciones.onclick = () => {
+    modalObjeciones.style.display = "none";
+
+    // Solo quitamos blur si no queda ningún modal abierto
+    if (
+  modalLlamadas.style.display !== "flex" &&
+  modalLink.style.display !== "flex" &&
+  modalObjeciones.style.display !== "flex"
+) {
+  document.body.classList.remove("modal-abierto");
+}
+  };
 }
 });

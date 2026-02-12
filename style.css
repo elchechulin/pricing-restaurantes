@@ -444,3 +444,145 @@ body.modal-abierto .modal-llamadas {
 #btnVolverPresupuesto:active {
   transform: scale(0.96);
 }
+/* ===============================
+   BOTÓN FLOTANTE OBJECIONES
+=============================== */
+
+.btn-flotante-objeciones {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(180deg,#ff6a00,#ff3b00);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 15px 30px rgba(255,80,0,0.5);
+  z-index: 10001;
+  transition: transform 0.2s ease;
+}
+
+.btn-flotante-objeciones:active {
+  transform: scale(0.95);
+}
+/* ===============================
+   OBJECIONES · BOTONES COMPACTOS
+=============================== */
+
+.btn-objecion {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: none;
+  background: rgba(255,255,255,0.9);
+  color: #111;
+  font-size: 12px;
+  font-weight: 600;
+  text-align: left;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.btn-objecion:active {
+  transform: scale(0.97);
+}
+/* ===============================
+   OBJECIONES · ESTRUCTURA HEADER
+=============================== */
+
+.obj-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+}
+
+.obj-header h3 {
+  font-size: 15px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.obj-search {
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  font-size: 18px;
+  cursor: pointer;
+}
+
+/* ===============================
+   OBJECIONES · CATEGORÍAS HORIZONTALES
+=============================== */
+
+.categorias-scroll {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+  margin-bottom: 16px;
+}
+
+.categoria-pill {
+  white-space: nowrap;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #e5e7eb;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.categoria-pill.activa {
+  background: linear-gradient(180deg,#ff6a00,#ff3b00);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(255,80,0,0.4);
+}
+
+.categoria-pill:active {
+  transform: scale(0.95);
+}
+.categoria-pill.activa {
+  background: linear-gradient(180deg,#ff6a00,#ff3b00);
+  border: none;
+  color: #fff;
+  box-shadow: 0 6px 18px rgba(255,80,0,0.35);
+}
+.categorias-scroll {
+  scrollbar-width: none;
+}
+
+.categorias-scroll::-webkit-scrollbar {
+  display: none;
+}
+.btn-volver-obj {
+  background: transparent;
+  border: none;
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-bottom: 10px;
+}
+
+.btn-volver-obj:active {
+  transform: scale(0.95);
+}
+#listaObjeciones {
+  animation: fadeLista 0.2s ease;
+}
+
+@keyframes fadeLista {
+  from { opacity: 0; transform: translateY(5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
