@@ -613,3 +613,16 @@ body.modal-abierto .modal-llamadas {
   from { opacity: 0; transform: translateY(5px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* ===============================
+   BLOQUE PRECIO FINAL CORREGIDO
+=============================== */
+
+/* ===============================
+   PRECIO EN TEXTO PLANO
+=============================== */
+
+.precio-tachado {
+  text-decoration: line-through;
+  opacity: 0.7;
+}

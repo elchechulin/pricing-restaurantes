@@ -783,6 +783,36 @@ function ajustarPrecioPsicologico(precio) {
 
 // Aplicación final visible al cliente
 mensual = ajustarPrecioPsicologico(mensual);
+/* ===============================
+   SUELO MÍNIMO SAAS
+=============================== */
+
+/* ===============================
+   SUELO MÍNIMO SAAS INTELIGENTE
+=============================== */
+
+const PRECIO_MINIMO_FINAL = 50;
+const PRECIO_MINIMO_BASE = Math.ceil(PRECIO_MINIMO_FINAL / (1 - DESCUENTO_INMEDIATO));
+
+if (mensual < PRECIO_MINIMO_BASE) {
+  mensual = PRECIO_MINIMO_BASE;
+}
+// ===============================
+// MODO TEST STRIPE · PRUEBA PAGO
+// ===============================
+
+if (nombre.trim().toLowerCase() === "prueba pago") {
+
+  // Forzamos mensualidad fija para test
+  mensual = 1;
+
+  // Eliminamos setup siempre
+  setup = 0;
+
+  // Neutralizamos cualquier modo de cierre
+  modoCierre = "inmediato";
+
+}
 // ===== PRECIO BASE (NO SE COMUNICA AL CLIENTE) =====
     const mensualBase = mensual;
     const setupBase = setup; // reservado para modo estándar
@@ -803,6 +833,9 @@ mensual = ajustarPrecioPsicologico(mensual);
     }
     const ingresoMesa = gasto * 4;
     const mesas = Math.max(1, Math.round(mensualFinal / ingresoMesa));
+    // GUARDAMOS IMPORTES REALES PARA STRIPE
+window.ULTIMA_MENSUALIDAD_FINAL = mensualFinal;
+window.ULTIMO_SETUP_FINAL = setupFinal;
     // ===============================
 // ANCLAJE DE PÉRDIDA REAL
 // ===============================
@@ -831,7 +864,15 @@ Ahora mismo, no llenar entre semana
 supone una pérdida aproximada de
 ${perdidaMensualAjustada} € al mes.
 
-${setupFinal > 0 ? `SETUP: ${setupFinal} €\n` : ""}MENSUALIDAD: ${mensualFinal} €
+${setupFinal > 0 ? `SETUP: ${setupFinal} €\n` : ""}${
+  modoCierre === "inmediato"
+    ? `
+MENSUALIDAD: <span class="precio-tachado">${mensualBase.toFixed(2)} €</span> – ${mensualFinal.toFixed(2)} €
+`
+    : `
+MENSUALIDAD: ${mensualFinal.toFixed(2)} €
+`
+}
 
 ANÁLISIS:
 - ${razones.join("\n- ")}
@@ -843,7 +884,7 @@ la mensualidad queda amortizada.
 ${infoRecomendado}
 `.trim();
 
-resultadoEl.textContent = textoCliente;
+resultadoEl.innerHTML = textoCliente.replace(/\n/g, "<br>");
 
     resultadoEl.scrollIntoView({ behavior: "smooth" });
     
@@ -929,7 +970,7 @@ esto queda amortizado.”
 
 }
 
-resultadoEl.textContent += `
+resultadoEl.innerHTML += `
 
 ────────────────────
 ${textoCierre}
@@ -1350,19 +1391,19 @@ document.getElementById("btnCierreFinal").onclick = () => {
    BOTÓN · CREAR ENLACE INMEDIATO
 =============================== */
 document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
+
   const texto = obtenerResultadoVisible();
   if (!texto) {
     alert("Primero calcula un presupuesto.");
     return;
   }
 
-  const matchMensual = texto.match(/MENSUALIDAD:\s(\d+)\s€/);
-  if (!matchMensual) {
-    alert("No se pudo detectar la mensualidad.");
+  const mensualidad = window.ULTIMA_MENSUALIDAD_FINAL;
+
+  if (!mensualidad) {
+    alert("No hay mensualidad calculada.");
     return;
   }
-
-  const mensualidad = parseInt(matchMensual[1], 10);
 
   try {
     const res = await fetch(
@@ -1413,17 +1454,14 @@ document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
     return;
   }
 
-  // Extraer importes del texto
-  const matchMensual = texto.match(/MENSUALIDAD:\s(\d+)\s€/);
-  const matchSetup = texto.match(/SETUP:\s(\d+)\s€/);
+  // Usar importes reales calculados (no regex)
+  const mensualidad = window.ULTIMA_MENSUALIDAD_FINAL;
+  const setup = window.ULTIMO_SETUP_FINAL;
 
-  if (!matchMensual || !matchSetup) {
-    alert("No se pudieron detectar los importes.");
+  if (!mensualidad || !setup) {
+    alert("No hay importes calculados.");
     return;
   }
-
-  const mensualidad = parseInt(matchMensual[1], 10);
-  const setup = parseInt(matchSetup[1], 10);
 
   try {
     const res = await fetch(
