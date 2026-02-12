@@ -467,6 +467,33 @@ body.modal-abierto .modal-llamadas {
   transition: transform 0.2s ease;
 }
 
+/* ===============================
+   BOTÓN FLOTANTE · IR A PRESUPUESTO
+=============================== */
+
+.btn-flotante-presupuesto {
+  position: fixed;
+  bottom: 20px;
+  left: 20px;
+  width: 62px;
+  height: 62px;
+  border-radius: 50%;
+  background: linear-gradient(180deg,#111,#000);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #fff;
+  cursor: pointer;
+  box-shadow: 0 15px 30px rgba(0,0,0,0.5);
+  z-index: 10001;
+  transition: transform 0.2s ease;
+}
+
+.btn-flotante-presupuesto:active {
+  transform: scale(0.95);
+}
+
 .btn-flotante-objeciones:active {
   transform: scale(0.95);
 }

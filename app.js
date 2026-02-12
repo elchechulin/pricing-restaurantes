@@ -361,10 +361,25 @@ let datosOnboarding = {
   const modalLlamadas = document.getElementById("modalLlamadas");
   const btnVolverPresupuesto = document.getElementById("btnVolverPresupuesto");
   btnVolverPresupuesto.onclick = () => {
+
   modalLlamadas.style.display = "none";
-  document.body.classList.remove("modal-abierto");
+
+  // Ocultar flotantes
   document.getElementById("btnObjecionesFlotante").style.display = "none";
+  document.getElementById("btnIrPresupuesto").style.display = "none"; // 🔴 FIX
+
+  // Quitar blur si no hay otros modales abiertos
+  if (
+    modalLink.style.display !== "flex" &&
+    modalObjeciones.style.display !== "flex"
+  ) {
+    document.body.classList.remove("modal-abierto");
+  }
+
+  // Ocultar botón header
   btnVolverPresupuesto.style.display = "none";
+
+  // Mostrar botón continuar guía
   document.getElementById("btnContinuarGuia").style.display = "block";
 };
 // ===============================
@@ -374,6 +389,8 @@ function cerrarModalLlamadasSeguro() {
   modalLlamadas.style.display = "none";
   document.body.classList.remove("modal-abierto");
   document.getElementById("btnObjecionesFlotante").style.display = "none";
+  document.getElementById("btnIrPresupuesto").style.display = "none";
+  btnVolverPresupuesto.style.display = "none";
 }
   /* ===============================
      GASTO MEDIO 5€ → 200€
@@ -2454,11 +2471,15 @@ modalBody.appendChild(btnCambioDueno);
       historialLlamada.push(estadoLlamada);
 
       if (estadoLlamada === "puente_calculo") {
-        volverAGuiaTrasCalculo = true;
-        historialLlamada = [];
-        cerrarModalLlamadasSeguro();
-        return;
-      }
+  volverAGuiaTrasCalculo = true;
+  historialLlamada = [];
+
+  // 🔴 Ocultamos botón flotante de presupuesto
+  document.getElementById("btnIrPresupuesto").style.display = "none";
+
+  cerrarModalLlamadasSeguro();
+  return;
+}
 
       estadoLlamada = btn.dataset.siguiente;
 
@@ -2492,12 +2513,44 @@ btnContinuarGuia.onclick = () => {
   modalLlamadas.style.display = "flex";
   document.body.classList.add("modal-abierto");
   document.getElementById("btnObjecionesFlotante").style.display = "flex";
+  document.getElementById("btnIrPresupuesto").style.display = "flex";
 
   btnVolverPresupuesto.style.display = "inline-block";
 
   renderPasoLlamada();
   actualizarBotonAtras();
 };
+/* ===============================
+   BOTÓN FLOTANTE · IR A PRESUPUESTO
+=============================== */
+
+const btnIrPresupuesto = document.getElementById("btnIrPresupuesto");
+
+if (btnIrPresupuesto) {
+  btnIrPresupuesto.onclick = () => {
+
+    // Cerramos modal SIN resetear estado
+    modalLlamadas.style.display = "none";
+
+    // Ocultamos flotantes
+    document.getElementById("btnObjecionesFlotante").style.display = "none";
+    btnIrPresupuesto.style.display = "none"; // 🔴 ESTE ES EL FIX
+
+    // Quitamos blur si no hay otros modales abiertos
+    if (
+      modalLink.style.display !== "flex" &&
+      modalObjeciones.style.display !== "flex"
+    ) {
+      document.body.classList.remove("modal-abierto");
+    }
+
+    // Mostramos botón continuar guía
+    document.getElementById("btnContinuarGuia").style.display = "block";
+
+    // Mostrar botón volver presupuesto cuando reentres
+    btnVolverPresupuesto.style.display = "inline-block";
+  };
+}
 /* ===============================
    MODAL · GUÍA DE LLAMADAS (OPEN / CLOSE)
 =============================== */
@@ -2522,6 +2575,8 @@ btnAtras.onclick = () => {
 // Cerrar modal SOLO con la X
 cerrarModalLlamadas.onclick = () => {
   modalLlamadas.style.display = "none";
+  document.getElementById("btnIrPresupuesto").style.display = "none";
+btnVolverPresupuesto.style.display = "none";
   document.body.classList.remove("modal-abierto");
   document.getElementById("btnObjecionesFlotante").style.display = "none";
 };
@@ -2533,6 +2588,7 @@ if (btnAbrirLlamadas) {
     renderPasoLlamada();
     modalLlamadas.style.display = "flex";
     document.getElementById("btnObjecionesFlotante").style.display = "flex";
+    document.getElementById("btnIrPresupuesto").style.display = "flex";
     document.body.classList.add("modal-abierto");
   };
 }
