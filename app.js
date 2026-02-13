@@ -791,11 +791,25 @@ mensual = ajustarPrecioPsicologico(mensual);
    SUELO MÍNIMO SAAS INTELIGENTE
 =============================== */
 
-const PRECIO_MINIMO_FINAL = 50;
-const PRECIO_MINIMO_BASE = Math.ceil(PRECIO_MINIMO_FINAL / (1 - DESCUENTO_INMEDIATO));
+/* ===============================
+   SUELOS MÍNIMOS POR ESCENARIO
+=============================== */
 
-if (mensual < PRECIO_MINIMO_BASE) {
-  mensual = PRECIO_MINIMO_BASE;
+let minimoFinal = 50; // Low por defecto
+
+if (escenarioAplicado === "Medium") {
+  minimoFinal = 70;
+}
+
+if (escenarioAplicado === "High") {
+  minimoFinal = 110;
+}
+
+// Convertimos a base antes del descuento
+const minimoBase = Math.ceil(minimoFinal / (1 - DESCUENTO_INMEDIATO));
+
+if (mensual < minimoBase) {
+  mensual = minimoBase;
 }
 // ===============================
 // MODO TEST STRIPE · PRUEBA PAGO
@@ -1245,6 +1259,16 @@ document.getElementById("btnPdf").onclick = () => {
     font-size: 14px;
     line-height: 1.6;
   }
+  .contenido-resultado {
+  white-space: pre-wrap;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.precio-tachado {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
 </style>
 </head>
 
@@ -1293,7 +1317,9 @@ document.getElementById("btnPdf").onclick = () => {
   <div class="section">
   <h3>Resultado del análisis</h3>
   <div class="box">
-    <pre>${texto}</pre>
+    <div class="contenido-resultado">
+      ${texto}
+    </div>
   </div>
 </div>
 
@@ -1412,10 +1438,11 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mensualidad,
-          setup: 0,
-          modo: "inmediato"
-        })
+  mensualidad,
+  setup: 0,
+  modo: "inmediato",
+  closer_id: window.CLOSER_ID || "admin"
+})
       }
     );
 
@@ -1472,7 +1499,8 @@ document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
         body: JSON.stringify({
   mensualidad,
   setup,
-  modo: "setup"
+  modo: "setup",
+  closer_id: window.CLOSER_ID || "admin"
 })
       }
     );
