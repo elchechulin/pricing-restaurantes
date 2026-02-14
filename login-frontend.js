@@ -28,8 +28,11 @@ document.getElementById("btnLogin").onclick = async () => {
       return;
     }
 
-    // Guardar sesión
-    localStorage.setItem("usuario", JSON.stringify(data));
+    // Guardar sesión segura
+localStorage.setItem("sesion_activa", "true");
+localStorage.setItem("usuario_id", data.id);
+localStorage.setItem("usuario_nombre", data.username);
+localStorage.setItem("usuario_rol", data.role);
 
     // Redirección por rol
     if (data.role === "admin") {

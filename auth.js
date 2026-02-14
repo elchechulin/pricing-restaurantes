@@ -1,22 +1,32 @@
-const usuario = JSON.parse(localStorage.getItem("usuario"));
+const sesion = localStorage.getItem("sesion_activa");
+const rol = localStorage.getItem("usuario_rol");
+const nombre = localStorage.getItem("usuario_nombre");
 
-if (!usuario) {
+// Si no hay sesión activa → fuera
+if (!sesion) {
   window.location.href = "login.html";
 }
 
 // Protección por rol
-if (window.location.pathname.includes("admin.html") && usuario.role !== "admin") {
+if (window.location.pathname.includes("admin.html") && rol !== "admin") {
   window.location.href = "login.html";
 }
 
-if (window.location.pathname.includes("closer.html") && usuario.role !== "closer") {
+if (window.location.pathname.includes("closer.html") && rol !== "closer") {
   window.location.href = "login.html";
 }
 
-document.getElementById("bienvenida").textContent =
-  "Bienvenido, " + usuario.full_name;
+// Mostrar nombre si existe elemento bienvenida
+const bienvenida = document.getElementById("bienvenida");
+if (bienvenida && nombre) {
+  bienvenida.textContent = "Bienvenido, " + nombre;
+}
 
-document.getElementById("logout").onclick = () => {
-  localStorage.removeItem("usuario");
-  window.location.href = "login.html";
-};
+// Logout
+const logoutBtn = document.getElementById("logout");
+if (logoutBtn) {
+  logoutBtn.onclick = () => {
+    localStorage.clear();
+    window.location.href = "login.html";
+  };
+}
