@@ -34,12 +34,8 @@ localStorage.setItem("usuario_id", data.id);
 localStorage.setItem("usuario_nombre", data.username);
 localStorage.setItem("usuario_rol", data.role);
 
-    // Redirección por rol
-    if (data.role === "admin") {
-      window.location.href = "admin.html";
-    } else {
-      window.location.href = "closer.html";
-    }
+    // Redirigir siempre a la aplicación principal
+window.location.href = "index.html";
 
   } catch (err) {
     errorEl.textContent = "Error conectando con el servidor.";
