@@ -1431,6 +1431,13 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
     return;
   }
 
+  const usuarioId = Number(localStorage.getItem("usuario_id"));
+
+  if (!usuarioId || isNaN(usuarioId)) {
+    alert("Sesión inválida. Vuelve a iniciar sesión.");
+    return;
+  }
+
   try {
     const res = await fetch(
       "https://stripe-backend-h1z1.vercel.app/api/create-payment-link",
@@ -1438,17 +1445,17 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-  mensualidad,
-  setup: 0,
-  modo: "inmediato",
-  closer_id: Number(localStorage.getItem("usuario_id") || 0)
-})
+          mensualidad,
+          setup: 0,
+          modo: "inmediato",
+          closer_id: usuarioId
+        })
       }
     );
 
     if (!res.ok) {
       const errorText = await res.text();
-      console.error("❌ Stripe backend error:", errorText);
+      console.error("Stripe backend error:", errorText);
       alert("El backend de pago devolvió un error.");
       return;
     }
@@ -1463,7 +1470,7 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
     abrirModalLink(data.url);
 
   } catch (err) {
-    console.error("❌ Fetch error:", err);
+    console.error("Fetch error:", err);
     alert("No se pudo conectar con el sistema de pago.");
   }
 };
@@ -1475,18 +1482,25 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
    BOTÓN · CREAR ENLACE SETUP
 =============================== */
 document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
+
   const texto = obtenerResultadoVisible();
   if (!texto) {
     alert("Primero calcula un presupuesto.");
     return;
   }
 
-  // Usar importes reales calculados (no regex)
   const mensualidad = window.ULTIMA_MENSUALIDAD_FINAL;
   const setup = window.ULTIMO_SETUP_FINAL;
 
   if (!mensualidad || !setup) {
     alert("No hay importes calculados.");
+    return;
+  }
+
+  const usuarioId = Number(localStorage.getItem("usuario_id"));
+
+  if (!usuarioId || isNaN(usuarioId)) {
+    alert("Sesión inválida. Vuelve a iniciar sesión.");
     return;
   }
 
@@ -1497,11 +1511,11 @@ document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-  mensualidad,
-  setup,
-  modo: "setup",
-  closer_id: Number(localStorage.getItem("usuario_id") || 0)
-})
+          mensualidad,
+          setup,
+          modo: "setup",
+          closer_id: usuarioId
+        })
       }
     );
 
