@@ -1441,7 +1441,7 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
   mensualidad,
   setup: 0,
   modo: "inmediato",
-  closer_id: window.CLOSER_ID || "admin"
+  closer_id: localStorage.getItem("usuario_id")
 })
       }
     );
@@ -1500,7 +1500,7 @@ document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
   mensualidad,
   setup,
   modo: "setup",
-  closer_id: window.CLOSER_ID || "admin"
+  closer_id: localStorage.getItem("usuario_id")
 })
       }
     );
