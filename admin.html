@@ -150,9 +150,45 @@ async function loadSection(section) {
 
     document.body.appendChild(script);
 
-  } else {
-    adminSection.innerHTML = `<h2>${section}</h2><p>Sección en construcción.</p>`;
-  }
+  } else if (section === "alta") {
+
+  adminSection.innerHTML = `
+    <div class="alta-container">
+
+      <button id="btnNuevoCloser" class="btn-nuevo-closer">
+        ➕ Dar de alta nuevo closer
+      </button>
+
+      <div id="formAltaCloser" class="form-alta-closer" style="display:none;">
+        
+        <label>Nombre completo
+          <input type="text" id="nuevoNombre" placeholder="Ej. Ismael Guerra">
+        </label>
+
+        <label>Municipio
+          <input type="text" id="nuevoMunicipio" placeholder="Ej. Madrid">
+        </label>
+
+        <label>Teléfono
+          <input type="text" id="nuevoTelefono" placeholder="Ej. +34 600 000 000">
+        </label>
+
+        <button id="btnCrearCloser" class="btn-crear-closer">
+          Crear closer
+        </button>
+
+        <div id="resultadoAlta" class="resultado-alta" style="display:none;"></div>
+
+      </div>
+
+    </div>
+  `;
+
+  setTimeout(initAltaCloser, 0);
+
+} else {
+  adminSection.innerHTML = `<h2>${section}</h2><p>Sección en construcción.</p>`;
+}
 }
 
   function toggleMenu() {
@@ -205,6 +241,66 @@ async function loadSection(section) {
   
   // Cargar Dashboard por defecto al entrar
 loadSection("dashboard");
+
+function initAltaCloser() {
+
+  const btnNuevo = document.getElementById("btnNuevoCloser");
+  const form = document.getElementById("formAltaCloser");
+  const btnCrear = document.getElementById("btnCrearCloser");
+  const resultado = document.getElementById("resultadoAlta");
+
+  btnNuevo.onclick = () => {
+    form.style.display = "block";
+  };
+
+  btnCrear.onclick = async () => {
+
+    const full_name = document.getElementById("nuevoNombre").value.trim();
+    const city = document.getElementById("nuevoMunicipio").value.trim();
+    const phone = document.getElementById("nuevoTelefono").value.trim();
+
+    btnCrear.disabled = true;
+    btnCrear.textContent = "Creando...";
+
+    try {
+
+      const res = await fetch("https://stripe-backend-h1z1.vercel.app/api/create-closer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ full_name, city, phone })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        resultado.style.display = "block";
+        resultado.innerHTML = `<p style="color:red;">${data.error}</p>`;
+        return;
+      }
+
+      resultado.style.display = "block";
+      resultado.innerHTML = `
+        <div class="card-credenciales">
+          <h3>Closer creado correctamente</h3>
+          <p><strong>Usuario:</strong> ${data.username}</p>
+          <p><strong>Contraseña:</strong> ${data.password}</p>
+          <p class="aviso">⚠ Copia estas credenciales ahora. No volverán a mostrarse.</p>
+        </div>
+      `;
+
+      setTimeout(() => {
+        resultado.style.display = "none";
+      }, 3600000); // 1 hora
+
+    } catch (err) {
+      resultado.style.display = "block";
+      resultado.innerHTML = `<p style="color:red;">Error servidor</p>`;
+    }
+
+    btnCrear.disabled = false;
+    btnCrear.textContent = "Crear closer";
+  };
+}
 </script>
 
 
