@@ -1,5 +1,5 @@
-document.addEventListener("DOMContentLoaded", () => {
-  
+function initPricingApp() {
+
   // ===============================
 // MODAL · ENLACE DE PAGO (HELPERS)
 // ===============================
@@ -2893,4 +2893,4 @@ if (cerrarModalObjeciones) {
 }
   };
 }
-});
+}

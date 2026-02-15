@@ -4,15 +4,15 @@
   <meta charset="UTF-8">
   <title>Panel Administrador</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <link rel="stylesheet" href="style.css">
 
   <style>
     body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #0f172a;
-      color: #f8fafc;
-      overflow-x: hidden;
-    }
+  margin: 0;
+  font-family: Arial, sans-serif;
+  overflow-x: hidden;
+}
 
     /* ===== HEADER ===== */
     .topbar {
@@ -110,9 +110,11 @@
   </div>
 
   <div class="content" id="contentArea">
-    <h2>Dashboard</h2>
-    <p>Bienvenido al panel administrador.</p>
-  </div>
+
+  <!-- CONTENEDOR DINÁMICO -->
+  <div id="adminSection"></div>
+
+</div>
 
 <script src="auth.js"></script>
 
@@ -120,6 +122,38 @@
   const menuBtn = document.getElementById("menuBtn");
   const sidebar = document.getElementById("sidebar");
   const content = document.getElementById("contentArea");
+  
+  const adminSection = document.getElementById("adminSection");
+
+async function loadSection(section) {
+
+  if (section === "dashboard") {
+
+    const res = await fetch("dashboard.html");
+    const html = await res.text();
+    adminSection.innerHTML = html;
+
+    // Eliminar app.js anterior si existe
+    const oldScript = document.querySelector("script[data-appjs]");
+    if (oldScript) oldScript.remove();
+
+    // Crear script nuevo
+    const script = document.createElement("script");
+    script.src = "app.js";
+    script.setAttribute("data-appjs", "true");
+
+    script.onload = function () {
+      if (typeof initPricingApp === "function") {
+        initPricingApp();
+      }
+    };
+
+    document.body.appendChild(script);
+
+  } else {
+    adminSection.innerHTML = `<h2>${section}</h2><p>Sección en construcción.</p>`;
+  }
+}
 
   function toggleMenu() {
     sidebar.classList.toggle("active");
@@ -150,17 +184,29 @@
 
   // Cerrar al hacer click en una opción
   document.querySelectorAll(".sidebar li").forEach(item => {
-    item.addEventListener("click", () => {
-      closeMenu();
-    });
+  item.addEventListener("click", () => {
+
+    if (item.id === "logoutBtn") return;
+
+    const section = item.dataset.section;
+    if (section) {
+      loadSection(section);
+    }
+
+    closeMenu();
   });
+});
 
   // Logout
   document.getElementById("logoutBtn").onclick = () => {
     localStorage.clear();
     window.location.href = "login.html";
   };
+  
+  // Cargar Dashboard por defecto al entrar
+loadSection("dashboard");
 </script>
+
 
 </body>
 </html>
