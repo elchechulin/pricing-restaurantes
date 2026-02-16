@@ -163,6 +163,7 @@ async function loadSection(section) {
   🧪 Crear usuario demo
 </button>
 
+<div id="resultadoDemo" style="display:none;margin-top:15px;"></div>
 
 <div id="demoCloserPanel" style="display:none;margin-top:25px;">
   <div class="card-credenciales">
@@ -270,6 +271,7 @@ function initAltaCloser() {
   const form = document.getElementById("formAltaCloser");
   const btnCrear = document.getElementById("btnCrearCloser");
   const resultado = document.getElementById("resultadoAlta");
+  const resultadoDemo = document.getElementById("resultadoDemo");
 
   const btnCrearDemo = document.getElementById("btnCrearDemoCloser");
 
@@ -357,22 +359,14 @@ btnCrearDemo.onclick = async () => {
 
     const data = await res.json();
 
-    console.log("RESPUESTA DEMO:", data);
-
     if (!res.ok) {
-      resultado.style.display = "block";
-      resultado.innerHTML = `<p style="color:red;">${data.error || "Error creando demo"}</p>`;
+      resultadoDemo.style.display = "block";
+      resultadoDemo.innerHTML = `<p style="color:red;">${data.error || "Error creando demo"}</p>`;
       return;
     }
 
-    if (!data.username || !data.password) {
-      resultado.style.display = "block";
-      resultado.innerHTML = `<p style="color:red;">Respuesta inválida del servidor</p>`;
-      return;
-    }
-
-    resultado.style.display = "block";
-    resultado.innerHTML = `
+    resultadoDemo.style.display = "block";
+    resultadoDemo.innerHTML = `
       <div class="card-credenciales">
         <h3>Usuario demo creado</h3>
         <p><strong>Usuario:</strong> ${data.username}</p>
@@ -382,9 +376,8 @@ btnCrearDemo.onclick = async () => {
     `;
 
   } catch (err) {
-    console.error("ERROR DEMO:", err);
-    resultado.style.display = "block";
-    resultado.innerHTML = `<p style="color:red;">Error creando demo</p>`;
+    resultadoDemo.style.display = "block";
+    resultadoDemo.innerHTML = `<p style="color:red;">Error creando demo</p>`;
   }
 
   btnCrearDemo.disabled = false;
