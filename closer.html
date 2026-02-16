@@ -251,5 +251,13 @@
 <script src="auth.js"></script>
 <script src="app.js"></script>
 
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    if (typeof initPricingApp === "function") {
+      initPricingApp();
+    }
+  });
+</script>
+
 </body>
 </html>
