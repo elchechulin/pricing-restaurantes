@@ -176,15 +176,6 @@ button[type="button"]:active {
 /* ===============================
    MODAL GUÍA
 =============================== */
-.modal-llamadas {
-  position: fixed;
-  inset: 0;
-  background: rgba(5, 5, 15, 0.85);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-}
 
 .modal-contenido {
   width: 90%;
@@ -289,15 +280,6 @@ body.modal-abierto {
   overflow: hidden;
 }
 
-.modal-llamadas {
-  position: fixed;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  z-index: 9999;
-}
 /* ===============================
    PASO 2.3.2 · BOTÓN ATRÁS (PREMIUM)
 =============================== */
@@ -377,16 +359,6 @@ body.modal-abierto {
    MODAL · BLOQUEO DE FONDO (CORREGIDO)
 =============================== */
 
-body.modal-abierto {
-  overflow: hidden;
-}
-
-/* Oscurecimiento SIN blur */
-body.modal-abierto .app {
-  opacity: 0.4;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-}
 
 /* El modal queda 100% nítido */
 .modal-llamadas {
@@ -685,4 +657,22 @@ body.modal-abierto .app {
   margin-top: 10px;
   font-size: 12px;
   color: #fbbf24;
+}
+/* ===============================
+   MODAL ESTABLE DEFINITIVO
+=============================== */
+
+body.modal-abierto {
+  overflow: hidden;
+}
+
+/* Fondo oscuro sin afectar al modal */
+.modal-llamadas {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 15, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
 }
