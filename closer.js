@@ -15,6 +15,12 @@ async function checkSession() {
       "https://stripe-backend-h1z1.vercel.app/api/login?user_id=" + userId
     );
 
+    // 🔴 Si el usuario fue eliminado (demo borrado)
+    if (res.status === 404) {
+      forceLogout("Tu cuenta ha sido eliminada.");
+      return;
+    }
+
     if (!res.ok) {
       forceLogout("Sesión inválida.");
       return;
@@ -24,17 +30,18 @@ async function checkSession() {
 
     const storedPasswordUpdatedAt = localStorage.getItem("password_updated_at");
 
-    // 🔴 Si el usuario ya no está activo
+    // 🔴 Usuario dado de baja
     if (!data.active) {
       forceLogout("Tu cuenta ha sido desactivada.");
       return;
     }
 
-    // 🔐 Si la contraseña fue cambiada desde el admin
+    // 🔐 Si la contraseña cambió
     if (
       storedPasswordUpdatedAt &&
       data.password_updated_at &&
-      storedPasswordUpdatedAt !== data.password_updated_at
+      new Date(storedPasswordUpdatedAt).getTime() !==
+      new Date(data.password_updated_at).getTime()
     ) {
       forceLogout("Tu contraseña ha sido restablecida. Vuelve a iniciar sesión.");
       return;
