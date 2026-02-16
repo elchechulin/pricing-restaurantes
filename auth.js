@@ -3,7 +3,7 @@ const rol = localStorage.getItem("usuario_rol");
 const nombre = localStorage.getItem("usuario_nombre");
 
 // Si no hay sesión activa → fuera
-if (!sesion) {
+if (!sesion || sesion !== "true") {
   window.location.href = "login.html";
 }
 
