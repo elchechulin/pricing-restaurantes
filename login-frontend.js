@@ -20,6 +20,7 @@ if (username === "demo_closer" && password === "demo123") {
   localStorage.setItem("usuario_nombre", "Closer Demo");
   localStorage.setItem("usuario_rol", "closer_demo");
   localStorage.setItem("modo_demo", "true");
+  localStorage.setItem("password_updated_at", "demo");
 
   window.location.href = "closer.html";
   return;
@@ -47,6 +48,7 @@ localStorage.setItem("sesion_activa", "true");
 localStorage.setItem("usuario_id", data.id);
 localStorage.setItem("usuario_nombre", data.username);
 localStorage.setItem("usuario_rol", data.role);
+localStorage.setItem("password_updated_at", data.password_updated_at);
 
     // Redirigir según rol
 if (data.role === "admin") {

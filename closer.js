@@ -19,8 +19,22 @@ async function checkSession() {
 
     const data = await res.json();
 
+    const storedPasswordUpdatedAt = localStorage.getItem("password_updated_at");
+
+    // Si está inactivo → cerrar sesión
     if (!data.active) {
-      forceLogout();
+      forceLogout("Tu cuenta ha sido desactivada.");
+      return;
+    }
+
+    // Si la contraseña cambió → cerrar sesión
+    if (
+      storedPasswordUpdatedAt &&
+      data.password_updated_at &&
+      storedPasswordUpdatedAt !== data.password_updated_at
+    ) {
+      forceLogout("Tu contraseña ha sido restablecida. Vuelve a iniciar sesión.");
+      return;
     }
 
   } catch (err) {
@@ -29,9 +43,9 @@ async function checkSession() {
 }
 
 // Forzar cierre de sesión
-function forceLogout() {
+function forceLogout(message) {
   localStorage.clear();
-  alert("Tu cuenta ha sido desactivada.");
+  alert(message || "Sesión cerrada.");
   window.location.href = "login.html";
 }
 
