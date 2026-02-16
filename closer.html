@@ -2,41 +2,254 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel Closer</title>
+  <title>Motor de Pricing · Restaurantes</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link rel="stylesheet" href="styles.css">
-
-  <style>
-    body {
-      margin: 0;
-      background: #0f172a;
-    }
-  </style>
+  <!-- IMPORTANTE -->
+  <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-<div id="appContainer"></div>
+<div class="app">
+
+  <div class="header">
+    <img src="assets/logo.png" alt="Restaurant Marketing" class="logo" />
+    <h1>Motor de Pricing · Restaurantes</h1>
+  </div>
+
+  <!-- PEGA AQUÍ TODO TU BLOQUE QUE ME ENVIASTE -->
+  
+  <main class="form" id="pricingForm">  
+
+  <label>  
+    Nombre del restaurante  
+    <input type="text" id="nombre" placeholder="Ej. Restaurante El Asador" />  
+  </label>  
+
+  <label>  
+    Código Postal  
+    <input type="number" id="cp" placeholder="Ej. 28380" />  
+  </label>  
+
+  <label>  
+    Municipio  
+    <input type="text" id="municipio" placeholder="Ej. Madrid" />  
+  </label>  
+
+  <label>  
+    Valoración media  
+    <input type="number" step="0.1" id="rating" placeholder="Ej. 4.5 ⭐️" />  
+  </label>  
+
+  <label>  
+    Número de reseñas  
+    <input type="number" id="resenas" placeholder="Ej. 230" />  
+  </label>  
+
+  <!-- ===== GASTO MEDIO (5€ A 200€, DE 5 EN 5) ===== -->  
+  <label>  
+    Gasto medio por persona  
+    <select id="gasto">  
+      <!-- se rellena por JS, NO SE BORRA -->  
+    </select>  
+  </label>  
+
+  <!-- ===== ESCENARIOS COMPLETOS ===== -->  
+  <label>  
+    Escenario  
+    <select id="escenario">  
+      <option value="recomendado">Recomendado</option>  
+      <option value="Low">Low</option>  
+      <option value="Medium">Medium</option>  
+      <option value="High">High</option>  
+    </select>  
+  </label>  
+
+  <button id="calcular">📊 Calcular precio</button>  
+
+<button
+  type="button"
+  id="btnModoEstandar"
+  style="display:none;"
+>
+  🤔 Cliente no decide → mostrar setup
+</button>
+
+<button
+  type="button"
+  id="btnCierreFinal"
+  style="display:none;"
+>
+  ✅ Cliente dice sí
+</button>
+
+<button
+  type="button"
+  id="btnWhatsappOnboarding"
+  style="display:none;"
+>
+  📲 Enviar onboarding por WhatsApp
+</button>
+
+  <!-- ===== BOTONES EXTRA (NO SE TOCA NADA EXISTENTE) ===== -->  
+  <button type="button" id="btnPdf">📄 PDF</button>
+<button type="button" id="btnWhatsapp">📲 WhatsApp</button>
+<button type="button" id="btnArgumento">🧠 Qué decir</button>
+<button type="button" id="btnObjeciones">🛑 Objeciones</button>
+
+<button
+  type="button"
+  id="btnGuiaLlamadas"
+  style="font-size:12px; background:#020617; color:#9ca3af; border:1px dashed #334155;"
+>
+  📞 Guía de llamada
+</button>
+
+<!-- ===== BOTONES DE PAGO (OCULTOS POR DEFECTO) ===== -->
+<button
+  type="button"
+  id="btnCrearEnlaceInmediato"
+  style="display:none;"
+>
+  💳 Crear enlace de pago · Activación inmediata
+</button>
+
+<button
+  type="button"
+  id="btnCrearEnlaceSetup"
+  style="display:none;"
+>
+  🧾 Crear enlace de pago · Setup
+</button>
+
+<section id="resultado" class="resultado"></section>  
+
+<section
+  id="onboarding"
+  style="display:none; margin-top:16px;"
+></section>
+<button
+  type="button"
+  id="btnContinuarGuia"
+  style="display:none; margin-top:12px;"
+>
+  👉 Continuar con la guía de llamadas
+</button>
+</main>
+
+  <!-- ===============================
+     MODAL · GUÍA DE LLAMADAS
+=============================== -->
+<div id="modalLlamadas" class="modal-llamadas" style="display:none;">
+  <div class="modal-contenido">
+    <div class="modal-header">
+  <div style="display:flex; align-items:center; gap:8px;">
+    <button
+      id="modalAtras"
+      class="modal-atras"
+      title="Volver atrás"
+      style="display:none;"
+    >
+      ←
+    </button>
+
+    <span>📞 Guía de llamada</span>
+  </div>
+
+  <div style="display:flex; align-items:center; gap:8px;">
+    <button
+      id="btnVolverPresupuesto"
+      style="display:none;"
+    >
+      ← Volver al presupuesto
+    </button>
+
+    <button id="cerrarModalLlamadas" class="modal-cerrar">✖</button>
+  </div>
+</div>
+
+    <div class="modal-body">
+      <p>Panel de guía de llamadas (estructura).</p>
+    </div>
+  </div>
+</div>
+<!-- ===============================
+     MODAL · ENLACE DE PAGO
+=============================== -->
+<div id="modalLink" class="modal-llamadas" style="display:none;">
+  <div class="modal-contenido">
+    <div class="modal-header">
+      <span>🔗 Enlace de pago</span>
+      <button id="cerrarModalLink" class="modal-cerrar">✖</button>
+    </div>
+
+    <div class="modal-body">
+      <p>Copia y envía este enlace al cliente:</p>
+
+      <input
+        id="linkPago"
+        type="text"
+        readonly
+        style="
+          width:100%;
+          padding:10px;
+          margin:12px 0;
+          border-radius:8px;
+          border:1px solid #334155;
+          background:#020617;
+          color:#f8fafc;
+        "
+      />
+
+      <button id="btnCopyLink" class="btn-respuesta">
+        📋 Copiar enlace
+      </button>
+    </div>
+  </div>
+</div>
+<!-- ===============================
+     BOTÓN FLOTANTE · OBJECIONES
+=============================== -->
+<div id="btnObjecionesFlotante" class="btn-flotante-objeciones" style="display:none;">
+  🧠
+</div>
+<!-- ===============================
+     MODAL · OBJECIONES INTELIGENTES
+=============================== -->
+<div id="modalObjeciones" class="modal-llamadas" style="display:none;">
+  <div class="modal-contenido">
+    <div class="modal-header">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <span>🧠 Objeciones y sujeciones</span>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:8px;">
+        <button id="cerrarModalObjeciones" class="modal-cerrar">✖</button>
+      </div>
+    </div>
+
+    <div class="modal-body" id="modalObjecionesBody">
+      <!-- Render dinámico -->
+    </div>
+  </div>
+</div>
+
+<!-- ===============================
+     BOTÓN FLOTANTE · IR A PRESUPUESTO
+=============================== -->
+<button
+  id="btnIrPresupuesto"
+  class="btn-flotante-presupuesto"
+  style="display:none;"
+>
+  💰
+</button>
+
+</div>
 
 <script src="auth.js"></script>
-
-<script>
-  // Cargar dashboard dentro de closer
-  fetch("dashboard.html")
-    .then(res => res.text())
-    .then(html => {
-      document.getElementById("appContainer").innerHTML = html;
-
-      const script = document.createElement("script");
-      script.src = "app.js";
-      script.onload = () => {
-        if (typeof initPricingApp === "function") {
-          initPricingApp();
-        }
-      };
-      document.body.appendChild(script);
-    });
-</script>
+<script src="app.js"></script>
 
 </body>
 </html>
