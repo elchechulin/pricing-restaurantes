@@ -209,6 +209,16 @@ async function loadSection(section) {
 
   setTimeout(initAltaCloser, 0);
 
+} else if (section === "baja") {
+
+  adminSection.innerHTML = `
+    <div style="max-width:1000px;margin:30px auto;">
+      <h2 style="margin-bottom:25px;">Closers activos</h2>
+      <div id="listaBajaClosers"></div>
+    </div>
+  `;
+
+  setTimeout(initBajaClosers, 0);
 } else {
   adminSection.innerHTML = `<h2>${section}</h2><p>Sección en construcción.</p>`;
 }
@@ -385,6 +395,95 @@ btnCrearDemo.onclick = async () => {
 };
 
 
+}
+
+async function initBajaClosers() {
+
+  const container = document.getElementById("listaBajaClosers");
+
+  try {
+
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/list-closers"
+    );
+
+    const closers = await res.json();
+
+    if (!res.ok) {
+      container.innerHTML = "<p>Error cargando closers</p>";
+      return;
+    }
+
+    if (closers.length === 0) {
+      container.innerHTML = "<p>No hay closers activos.</p>";
+      return;
+    }
+
+    container.innerHTML = "";
+
+    closers.forEach(closer => {
+
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+      row.style.justifyContent = "space-between";
+      row.style.padding = "14px 20px";
+      row.style.marginBottom = "12px";
+      row.style.background = "rgba(15,10,35,0.85)";
+      row.style.borderRadius = "14px";
+      row.style.backdropFilter = "blur(10px)";
+
+      const left = document.createElement("div");
+      left.innerHTML = `
+        <strong>${closer.username}</strong>
+        <div style="font-size:12px;opacity:0.7;">ID: ${closer.id}</div>
+      `;
+
+      const button = document.createElement("button");
+      button.textContent = closer.is_active ? "Dar de baja" : "Volver a dar de alta";
+      button.style.padding = "8px 14px";
+      button.style.borderRadius = "10px";
+      button.style.border = "none";
+      button.style.cursor = "pointer";
+      button.style.fontWeight = "600";
+      button.style.background = closer.is_active
+        ? "linear-gradient(90deg,#ff3b00,#ff6a00)"
+        : "linear-gradient(90deg,#16a34a,#22c55e)";
+      button.style.color = "#fff";
+
+      if (!closer.is_active) {
+        const status = document.createElement("div");
+        status.textContent = "Dado de baja";
+        status.style.fontSize = "12px";
+        status.style.color = "#fbbf24";
+        status.style.marginTop = "4px";
+        left.appendChild(status);
+      }
+
+      button.onclick = async () => {
+
+        button.disabled = true;
+
+        await fetch(
+          "https://stripe-backend-h1z1.vercel.app/api/toggle-baja-closer",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_id: closer.id })
+          }
+        );
+
+        initBajaClosers(); // refresca lista
+      };
+
+      row.appendChild(left);
+      row.appendChild(button);
+      container.appendChild(row);
+    });
+
+  } catch {
+    container.innerHTML = "<p>Error servidor</p>";
+  }
 }
 </script>
 
