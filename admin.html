@@ -219,8 +219,25 @@ async function loadSection(section) {
   `;
 
   setTimeout(initBajaClosers, 0);
+
+} else if (section === "closers") {
+
+  adminSection.innerHTML = `
+    <div style="max-width:1000px;margin:30px auto;">
+      <h2 style="margin-bottom:25px;">Gestión de Closers</h2>
+      <div id="listaClosers"></div>
+    </div>
+  `;
+
+  setTimeout(initClosersSection, 0);
+
 } else {
-  adminSection.innerHTML = `<h2>${section}</h2><p>Sección en construcción.</p>`;
+
+  adminSection.innerHTML = `
+    <h2>${section}</h2>
+    <p>Sección en construcción.</p>
+  `;
+
 }
 }
 
@@ -404,7 +421,7 @@ async function initBajaClosers() {
   try {
 
     const res = await fetch(
-      "https://stripe-backend-h1z1.vercel.app/api/list-closers"
+      "https://stripe-backend-h1z1.vercel.app/api/list-baja-closers"
     );
 
     const closers = await res.json();
@@ -478,6 +495,247 @@ async function initBajaClosers() {
 
       row.appendChild(left);
       row.appendChild(button);
+      container.appendChild(row);
+    });
+
+  } catch {
+    container.innerHTML = "<p>Error servidor</p>";
+  }
+}
+
+async function initClosersSection() {
+
+  const container = document.getElementById("listaClosers");
+
+  try {
+
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/list-closers"
+    );
+
+    const closers = await res.json();
+
+    if (!res.ok) {
+      container.innerHTML = "<p>Error cargando closers</p>";
+      return;
+    }
+
+    if (closers.length === 0) {
+      container.innerHTML = "<p>No hay closers.</p>";
+      return;
+    }
+
+    container.innerHTML = "";
+
+    closers.forEach(closer => {
+
+      const row = document.createElement("div");
+      row.style.display = "flex";
+      row.style.flexDirection = "column";
+      row.style.padding = "14px 20px";
+      row.style.marginBottom = "12px";
+      row.style.background = "rgba(15,10,35,0.85)";
+      row.style.borderRadius = "14px";
+      row.style.backdropFilter = "blur(10px)";
+      row.style.cursor = "pointer";
+
+      const header = document.createElement("div");
+      header.style.display = "flex";
+      header.style.alignItems = "center";
+      header.style.justifyContent = "space-between";
+
+      const left = document.createElement("div");
+      left.innerHTML = `
+        <strong>${closer.username}</strong>
+        <div style="font-size:12px;opacity:0.7;">ID: ${closer.id}</div>
+      `;
+
+      const right = document.createElement("div");
+      right.style.display = "flex";
+      right.style.alignItems = "center";
+      right.style.gap = "15px";
+
+      const statusDot = document.createElement("div");
+      statusDot.style.width = "10px";
+      statusDot.style.height = "10px";
+      statusDot.style.borderRadius = "50%";
+      statusDot.style.background = closer.is_active ? "#22c55e" : "#ef4444";
+
+      const statusText = document.createElement("span");
+      statusText.textContent = closer.is_active ? "Activo" : "Inactivo";
+      statusText.style.fontSize = "13px";
+
+      right.appendChild(statusDot);
+      right.appendChild(statusText);
+
+      const ahora = new Date();
+const bajaDate = closer.baja_at ? new Date(closer.baja_at) : null;
+
+const puedeEliminar =
+  closer.is_demo ||
+  (
+    !closer.is_demo &&
+    !closer.is_active &&
+    bajaDate &&
+    (ahora - bajaDate) > 3600000
+  );
+
+if (puedeEliminar) {
+
+  const deleteBtn = document.createElement("div");
+  deleteBtn.textContent = "🗑";
+  deleteBtn.style.cursor = "pointer";
+  deleteBtn.style.fontSize = "18px";
+
+  deleteBtn.onclick = async (e) => {
+    e.stopPropagation();
+
+    await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/delete-closer",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: closer.id })
+      }
+    );
+
+    initClosersSection();
+  };
+
+  right.appendChild(deleteBtn);
+}
+
+      header.appendChild(left);
+      header.appendChild(right);
+
+      const details = document.createElement("div");
+      details.style.display = "none";
+      details.style.marginTop = "12px";
+      details.style.fontSize = "13px";
+      details.style.opacity = "0.85";
+      
+      // Estado contractual (Alta / Baja)
+
+const estadoContainer = document.createElement("div");
+estadoContainer.style.marginBottom = "10px";
+estadoContainer.style.fontWeight = "600";
+estadoContainer.style.display = "flex";
+estadoContainer.style.alignItems = "center";
+estadoContainer.style.gap = "8px";
+
+const estadoDot = document.createElement("div");
+estadoDot.style.width = "10px";
+estadoDot.style.height = "10px";
+estadoDot.style.borderRadius = "50%";
+
+const estadoTexto = document.createElement("span");
+
+if (closer.is_active) {
+  estadoDot.style.background = "#22c55e";
+  estadoTexto.textContent = "Alta activa";
+} else {
+  estadoDot.style.background = "#ef4444";
+  estadoTexto.textContent = "Dado de baja";
+}
+
+estadoContainer.appendChild(estadoDot);
+estadoContainer.appendChild(estadoTexto);
+
+details.appendChild(estadoContainer);
+
+      function formatDate(dateString, timeZone) {
+
+  if (!dateString) return { date: "--", time: "--" };
+
+  const dateObj = new Date(dateString);
+
+  const date = dateObj.toLocaleDateString("es-ES", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit"
+  });
+
+  const time = dateObj.toLocaleTimeString("es-ES", {
+    timeZone,
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit"
+  });
+
+  return { date, time };
+}
+
+
+const countrySelect = document.createElement("select");
+countrySelect.style.marginTop = "8px";
+countrySelect.style.fontSize = "12px";
+countrySelect.style.padding = "4px";
+countrySelect.style.borderRadius = "6px";
+
+countrySelect.onclick = (e) => e.stopPropagation();
+countrySelect.onmousedown = (e) => e.stopPropagation();
+
+const countries = [
+  { name: "España", zone: "Europe/Madrid" },
+  { name: "Reino Unido", zone: "Europe/London" },
+  { name: "Estados Unidos - Nueva York", zone: "America/New_York" },
+  { name: "Estados Unidos - Los Angeles", zone: "America/Los_Angeles" },
+  { name: "Rusia - Moscú", zone: "Europe/Moscow" },
+  { name: "Dubai", zone: "Asia/Dubai" },
+  { name: "México", zone: "America/Mexico_City" },
+  { name: "Argentina", zone: "America/Argentina/Buenos_Aires" },
+  { name: "Colombia", zone: "America/Bogota" },
+  { name: "UTC", zone: "UTC" }
+];
+
+countries.forEach(c => {
+  const option = document.createElement("option");
+  option.value = c.zone;
+  option.textContent = c.name;
+  countrySelect.appendChild(option);
+});
+
+
+const altaContainer = document.createElement("div");
+const bajaContainer = document.createElement("div");
+
+function renderDates() {
+
+  const zone = countrySelect.value;
+
+  const alta = formatDate(closer.created_at, zone);
+  const baja = formatDate(closer.baja_at, zone);
+
+  altaContainer.innerHTML = `
+    <strong>Fecha alta</strong><br>
+    ${alta.date}<br>
+    ${alta.time}
+  `;
+
+  bajaContainer.innerHTML = `
+    <strong>Fecha baja</strong><br>
+    ${baja.date}<br>
+    ${baja.time}
+  `;
+}
+
+countrySelect.onchange = renderDates;
+
+renderDates();
+
+details.appendChild(countrySelect);
+details.appendChild(altaContainer);
+details.appendChild(bajaContainer);
+
+      row.appendChild(header);
+      row.appendChild(details);
+
+      header.onclick = () => {
+        details.style.display =
+          details.style.display === "none" ? "block" : "none";
+      };
+
       container.appendChild(row);
     });
 
