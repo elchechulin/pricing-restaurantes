@@ -773,6 +773,61 @@ renderDates();
 details.appendChild(countrySelect);
 details.appendChild(altaContainer);
 details.appendChild(bajaContainer);
+// =============================
+// 🔐 BOTÓN RESTABLECER PASSWORD
+// =============================
+
+if (!closer.is_demo) {
+
+  const resetBtn = document.createElement("button");
+  resetBtn.textContent = "🔐 Restablecer contraseña";
+  resetBtn.style.marginTop = "15px";
+  resetBtn.style.padding = "8px 12px";
+  resetBtn.style.borderRadius = "8px";
+  resetBtn.style.border = "none";
+  resetBtn.style.cursor = "pointer";
+  resetBtn.style.fontWeight = "600";
+  resetBtn.style.background = "#1e293b";
+  resetBtn.style.color = "#fff";
+
+  resetBtn.onclick = async (e) => {
+    e.stopPropagation();
+
+    const adminPassword = prompt("Introduce tu contraseña de administrador:");
+
+    if (!adminPassword) return;
+
+    try {
+
+      const res = await fetch(
+        "https://stripe-backend-h1z1.vercel.app/api/login",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "reset_password",
+            user_id: closer.id,
+            admin_password: adminPassword
+          })
+        }
+      );
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        alert(data.error || "Error restableciendo contraseña");
+        return;
+      }
+
+      alert("Nueva contraseña: " + data.new_password);
+
+    } catch (err) {
+      alert("Error servidor");
+    }
+  };
+
+  details.appendChild(resetBtn);
+}
 
       row.appendChild(header);
       row.appendChild(details);
