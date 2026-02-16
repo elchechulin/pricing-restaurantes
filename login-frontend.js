@@ -10,6 +10,20 @@ document.getElementById("btnLogin").onclick = async () => {
     errorEl.textContent = "Completa usuario y contraseña.";
     return;
   }
+  // ============================
+// MODO DEMO (NO USA BACKEND)
+// ============================
+if (username === "demo_closer" && password === "demo123") {
+
+  localStorage.setItem("sesion_activa", "true");
+  localStorage.setItem("usuario_id", "demo");
+  localStorage.setItem("usuario_nombre", "Closer Demo");
+  localStorage.setItem("usuario_rol", "closer_demo");
+  localStorage.setItem("modo_demo", "true");
+
+  window.location.href = "closer.html";
+  return;
+}
 
   try {
     const res = await fetch(

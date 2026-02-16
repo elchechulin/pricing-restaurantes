@@ -158,6 +158,31 @@ async function loadSection(section) {
       <button id="btnNuevoCloser" class="btn-nuevo-closer">
         ➕ Dar de alta nuevo closer
       </button>
+      
+      <button id="btnDemoCloser" class="btn-nuevo-closer" style="margin-top:12px; background:#111;">
+  🧪 Crear usuario demo
+</button>
+      
+      <button id="btnDemoCloser" class="btn-nuevo-closer" style="margin-top:15px;background:linear-gradient(90deg,#111,#222);">
+  👁 Ver experiencia del closer
+</button>
+
+<div id="demoCloserPanel" style="display:none;margin-top:25px;">
+  <div class="card-credenciales">
+    <h3>Simulación de trabajo del closer</h3>
+    <ol style="margin-top:10px;line-height:1.6;">
+      <li>1️⃣ Inicia sesión con su usuario.</li>
+      <li>2️⃣ Accede al motor de pricing.</li>
+      <li>3️⃣ Calcula precio al restaurante.</li>
+      <li>4️⃣ Genera enlace de pago.</li>
+      <li>5️⃣ Cuando el cliente paga, la venta se registra automáticamente.</li>
+      <li>6️⃣ La comisión se acumula para el cierre mensual.</li>
+    </ol>
+    <p class="aviso">
+      ⚠ Esta es una simulación visual. No crea datos reales.
+    </p>
+  </div>
+</div>
 
       <div id="formAltaCloser" class="form-alta-closer" style="display:none;">
         
@@ -247,7 +272,48 @@ function initAltaCloser() {
   const btnNuevo = document.getElementById("btnNuevoCloser");
   const form = document.getElementById("formAltaCloser");
   const btnCrear = document.getElementById("btnCrearCloser");
+  const btnDemo = document.getElementById("btnDemoCloser");
+
+btnDemo.onclick = async () => {
+
+  btnDemo.disabled = true;
+  btnDemo.textContent = "Creando demo...";
+
+  try {
+
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/create-demo-closer",
+      { method: "POST" }
+    );
+
+    const data = await res.json();
+
+    resultado.style.display = "block";
+    resultado.innerHTML = `
+      <div class="card-credenciales">
+        <h3>Usuario demo creado</h3>
+        <p><strong>Usuario:</strong> ${data.username}</p>
+        <p><strong>Contraseña:</strong> ${data.password}</p>
+        <p class="aviso">⚠ Funciona hasta que lo elimines manualmente.</p>
+      </div>
+    `;
+
+  } catch {
+    resultado.innerHTML = `<p style="color:red;">Error creando demo</p>`;
+  }
+
+  btnDemo.disabled = false;
+  btnDemo.textContent = "🧪 Crear usuario demo";
+};
   const resultado = document.getElementById("resultadoAlta");
+  
+  const btnDemo = document.getElementById("btnDemoCloser");
+const demoPanel = document.getElementById("demoCloserPanel");
+
+btnDemo.onclick = () => {
+  demoPanel.style.display =
+    demoPanel.style.display === "none" ? "block" : "none";
+};
 
   btnNuevo.onclick = () => {
     form.style.display = "block";
@@ -255,51 +321,59 @@ function initAltaCloser() {
 
   btnCrear.onclick = async () => {
 
-    const full_name = document.getElementById("nuevoNombre").value.trim();
-    const city = document.getElementById("nuevoMunicipio").value.trim();
-    const phone = document.getElementById("nuevoTelefono").value.trim();
+  const full_name = document.getElementById("nuevoNombre").value.trim();
+  const city = document.getElementById("nuevoMunicipio").value.trim();
+  const phone = document.getElementById("nuevoTelefono").value.trim();
 
-    btnCrear.disabled = true;
-    btnCrear.textContent = "Creando...";
+  // Validación FRONTEND inmediata
+  if (!full_name || !city) {
+    resultado.style.display = "block";
+    resultado.innerHTML = `<p style="color:red;">Nombre y municipio son obligatorios</p>`;
+    return; // 🔹 NO desactivamos botón si falla aquí
+  }
 
-    try {
+  btnCrear.disabled = true;
+  btnCrear.textContent = "Creando...";
 
-      const res = await fetch("https://stripe-backend-h1z1.vercel.app/api/create-closer", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ full_name, city, phone })
-      });
+  try {
 
-      const data = await res.json();
+    const res = await fetch("https://stripe-backend-h1z1.vercel.app/api/create-closer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ full_name, city, phone })
+    });
 
-      if (!res.ok) {
-        resultado.style.display = "block";
-        resultado.innerHTML = `<p style="color:red;">${data.error}</p>`;
-        return;
-      }
+    const data = await res.json();
 
+    if (!res.ok) {
       resultado.style.display = "block";
-      resultado.innerHTML = `
-        <div class="card-credenciales">
-          <h3>Closer creado correctamente</h3>
-          <p><strong>Usuario:</strong> ${data.username}</p>
-          <p><strong>Contraseña:</strong> ${data.password}</p>
-          <p class="aviso">⚠ Copia estas credenciales ahora. No volverán a mostrarse.</p>
-        </div>
-      `;
-
-      setTimeout(() => {
-        resultado.style.display = "none";
-      }, 3600000); // 1 hora
-
-    } catch (err) {
-      resultado.style.display = "block";
-      resultado.innerHTML = `<p style="color:red;">Error servidor</p>`;
+      resultado.innerHTML = `<p style="color:red;">${data.error}</p>`;
+      return;
     }
 
-    btnCrear.disabled = false;
-    btnCrear.textContent = "Crear closer";
-  };
+    resultado.style.display = "block";
+    resultado.innerHTML = `
+      <div class="card-credenciales">
+        <h3>Closer creado correctamente</h3>
+        <p><strong>Usuario:</strong> ${data.username}</p>
+        <p><strong>Contraseña:</strong> ${data.password}</p>
+        <p class="aviso">⚠ Copia estas credenciales ahora. No volverán a mostrarse.</p>
+      </div>
+    `;
+
+    setTimeout(() => {
+      resultado.style.display = "none";
+    }, 3600000);
+
+  } catch (err) {
+    resultado.style.display = "block";
+    resultado.innerHTML = `<p style="color:red;">Error servidor</p>`;
+  }
+
+  // 🔹 SIEMPRE restaurar botón al final
+  btnCrear.disabled = false;
+  btnCrear.textContent = "Crear closer";
+};
 }
 </script>
 

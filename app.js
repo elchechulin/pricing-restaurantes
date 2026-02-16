@@ -1425,6 +1425,13 @@ document.getElementById("btnCrearEnlaceInmediato").onclick = async () => {
   }
 
   const mensualidad = window.ULTIMA_MENSUALIDAD_FINAL;
+  // ============================
+// BLOQUEO MODO DEMO
+// ============================
+if (localStorage.getItem("modo_demo") === "true") {
+  alert("Modo demo: enlace ficticio generado.");
+  return;
+}
 
   if (!mensualidad) {
     alert("No hay mensualidad calculada.");
@@ -1491,6 +1498,13 @@ document.getElementById("btnCrearEnlaceSetup").onclick = async () => {
 
   const mensualidad = window.ULTIMA_MENSUALIDAD_FINAL;
   const setup = window.ULTIMO_SETUP_FINAL;
+  // ============================
+// BLOQUEO MODO DEMO
+// ============================
+if (localStorage.getItem("modo_demo") === "true") {
+  alert("Modo demo: enlace ficticio generado.");
+  return;
+}
 
   if (!mensualidad || !setup) {
     alert("No hay importes calculados.");

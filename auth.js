@@ -12,7 +12,11 @@ if (window.location.pathname.includes("admin.html") && rol !== "admin") {
   window.location.href = "login.html";
 }
 
-if (window.location.pathname.includes("closer.html") && rol !== "closer") {
+if (
+  window.location.pathname.includes("closer.html") &&
+  rol !== "closer" &&
+  rol !== "closer_demo"
+) {
   window.location.href = "login.html";
 }
 
