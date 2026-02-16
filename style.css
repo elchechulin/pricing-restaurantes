@@ -374,19 +374,23 @@ body.modal-abierto {
   transform: scale(0.9);
 }
 /* ===============================
-   PASO 2.5 · FOCO TOTAL EN LA DECISIÓN
+   MODAL · BLOQUEO DE FONDO (CORREGIDO)
 =============================== */
 
-/* Oscurece y desenfoca el fondo cuando el modal está abierto */
-body.modal-abierto .app {
-  filter: blur(4px) brightness(0.55);
-  transition: filter 0.25s ease;
-  pointer-events: none;
+body.modal-abierto {
+  overflow: hidden;
 }
 
-/* El modal queda totalmente nítido y dominante */
-body.modal-abierto .modal-llamadas {
-  pointer-events: auto;
+/* Oscurecimiento SIN blur */
+body.modal-abierto .app {
+  opacity: 0.4;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* El modal queda 100% nítido */
+.modal-llamadas {
+  z-index: 9999;
 }
 
 
