@@ -339,38 +339,53 @@ function initAltaCloser() {
   };
 
   // Crear usuario DEMO
-  btnCrearDemo.onclick = async () => {
+btnCrearDemo.onclick = async () => {
 
-    btnCrearDemo.disabled = true;
-    btnCrearDemo.textContent = "Creando demo...";
+  btnCrearDemo.disabled = true;
+  btnCrearDemo.textContent = "Creando demo...";
 
-    try {
+  resultado.style.display = "none";
+  resultado.innerHTML = "";
 
-      const res = await fetch(
-        "https://stripe-backend-h1z1.vercel.app/api/create-demo-closer",
-        { method: "POST" }
-      );
+  try {
 
-      const data = await res.json();
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/create-demo-closer",
+      { method: "POST" }
+    );
 
+    const data = await res.json();
+
+    if (!res.ok) {
       resultado.style.display = "block";
-      resultado.innerHTML = `
-        <div class="card-credenciales">
-          <h3>Usuario demo creado</h3>
-          <p><strong>Usuario:</strong> ${data.username}</p>
-          <p><strong>Contraseña:</strong> ${data.password}</p>
-          <p class="aviso">⚠ Funciona hasta que lo elimines manualmente.</p>
-        </div>
-      `;
-
-    } catch {
-      resultado.style.display = "block";
-      resultado.innerHTML = `<p style="color:red;">Error creando demo</p>`;
+      resultado.innerHTML = `<p style="color:red;">${data.error || "Error creando demo"}</p>`;
+      return;
     }
 
-    btnCrearDemo.disabled = false;
-    btnCrearDemo.textContent = "🧪 Crear usuario demo";
-  };
+    if (!data.username || !data.password) {
+      resultado.style.display = "block";
+      resultado.innerHTML = `<p style="color:red;">Respuesta inválida del servidor</p>`;
+      return;
+    }
+
+    resultado.style.display = "block";
+    resultado.innerHTML = `
+      <div class="card-credenciales">
+        <h3>Usuario demo creado correctamente</h3>
+        <p><strong>Usuario:</strong> ${data.username}</p>
+        <p><strong>Contraseña:</strong> ${data.password}</p>
+        <p class="aviso">⚠ Copia estas credenciales ahora.</p>
+      </div>
+    `;
+
+  } catch (err) {
+    resultado.style.display = "block";
+    resultado.innerHTML = `<p style="color:red;">Error conectando con backend</p>`;
+  }
+
+  btnCrearDemo.disabled = false;
+  btnCrearDemo.textContent = "🧪 Crear usuario demo";
+};
 
 
 }
