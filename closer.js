@@ -8,26 +8,29 @@ if (!userId) {
   window.location.href = "login.html";
 }
 
-// Función que valida si el usuario sigue activo
+// Función que valida si el usuario sigue activo o si la contraseña cambió
 async function checkSession() {
   try {
     const res = await fetch(
       "https://stripe-backend-h1z1.vercel.app/api/login?user_id=" + userId
     );
 
-    if (!res.ok) return;
+    if (!res.ok) {
+      forceLogout("Sesión inválida.");
+      return;
+    }
 
     const data = await res.json();
 
     const storedPasswordUpdatedAt = localStorage.getItem("password_updated_at");
 
-    // Si está inactivo → cerrar sesión
+    // 🔴 Si el usuario ya no está activo
     if (!data.active) {
       forceLogout("Tu cuenta ha sido desactivada.");
       return;
     }
 
-    // Si la contraseña cambió → cerrar sesión
+    // 🔐 Si la contraseña fue cambiada desde el admin
     if (
       storedPasswordUpdatedAt &&
       data.password_updated_at &&
