@@ -163,9 +163,6 @@ async function loadSection(section) {
   🧪 Crear usuario demo
 </button>
 
-<button id="btnVerDemoCloser" class="btn-nuevo-closer" style="margin-top:15px;background:linear-gradient(90deg,#111,#222);">
-  👁 Ver experiencia del closer
-</button>
 
 <div id="demoCloserPanel" style="display:none;margin-top:25px;">
   <div class="card-credenciales">
@@ -275,8 +272,6 @@ function initAltaCloser() {
   const resultado = document.getElementById("resultadoAlta");
 
   const btnCrearDemo = document.getElementById("btnCrearDemoCloser");
-  const btnVerDemo = document.getElementById("btnVerDemoCloser");
-  const demoPanel = document.getElementById("demoCloserPanel");
 
   // Mostrar formulario alta real
   btnNuevo.onclick = () => {
@@ -377,11 +372,6 @@ function initAltaCloser() {
     btnCrearDemo.textContent = "🧪 Crear usuario demo";
   };
 
-  // Mostrar experiencia visual demo
-  btnVerDemo.onclick = () => {
-    demoPanel.style.display =
-      demoPanel.style.display === "none" ? "block" : "none";
-  };
 
 }
 </script>
