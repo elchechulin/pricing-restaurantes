@@ -642,6 +642,52 @@ estadoContainer.appendChild(estadoDot);
 estadoContainer.appendChild(estadoTexto);
 
 details.appendChild(estadoContainer);
+// =============================
+// Comisión dinámica
+// =============================
+
+let commissionText = "--";
+
+if (closer.is_active && closer.commission_start_at) {
+
+  const start = new Date(closer.commission_start_at);
+  const now = new Date();
+
+  const diffMonths =
+    (now.getFullYear() - start.getFullYear()) * 12 +
+    (now.getMonth() - start.getMonth());
+
+  if (diffMonths <= 0) {
+    commissionText = "50%";
+  } else if (diffMonths === 1) {
+    commissionText = "35%";
+  } else {
+    commissionText = "25%";
+  }
+}
+
+const commissionContainer = document.createElement("div");
+commissionContainer.style.marginBottom = "8px";
+commissionContainer.innerHTML = `
+  <strong>Comisión actual:</strong> ${commissionText}
+`;
+
+details.appendChild(commissionContainer);
+
+// =============================
+// Teléfono (si existe)
+// =============================
+
+if (closer.phone) {
+
+  const phoneContainer = document.createElement("div");
+  phoneContainer.style.marginBottom = "8px";
+  phoneContainer.innerHTML = `
+    <strong>Teléfono:</strong> ${closer.phone}
+  `;
+
+  details.appendChild(phoneContainer);
+}
 
       function formatDate(dateString, timeZone) {
 
