@@ -159,11 +159,11 @@ async function loadSection(section) {
         ➕ Dar de alta nuevo closer
       </button>
       
-      <button id="btnDemoCloser" class="btn-nuevo-closer" style="margin-top:12px; background:#111;">
+      <button id="btnCrearDemoCloser" class="btn-nuevo-closer" style="margin-top:12px; background:#111;">
   🧪 Crear usuario demo
 </button>
-      
-      <button id="btnDemoCloser" class="btn-nuevo-closer" style="margin-top:15px;background:linear-gradient(90deg,#111,#222);">
+
+<button id="btnVerDemoCloser" class="btn-nuevo-closer" style="margin-top:15px;background:linear-gradient(90deg,#111,#222);">
   👁 Ver experiencia del closer
 </button>
 
@@ -272,108 +272,117 @@ function initAltaCloser() {
   const btnNuevo = document.getElementById("btnNuevoCloser");
   const form = document.getElementById("formAltaCloser");
   const btnCrear = document.getElementById("btnCrearCloser");
-  const btnDemo = document.getElementById("btnDemoCloser");
-
-btnDemo.onclick = async () => {
-
-  btnDemo.disabled = true;
-  btnDemo.textContent = "Creando demo...";
-
-  try {
-
-    const res = await fetch(
-      "https://stripe-backend-h1z1.vercel.app/api/create-demo-closer",
-      { method: "POST" }
-    );
-
-    const data = await res.json();
-
-    resultado.style.display = "block";
-    resultado.innerHTML = `
-      <div class="card-credenciales">
-        <h3>Usuario demo creado</h3>
-        <p><strong>Usuario:</strong> ${data.username}</p>
-        <p><strong>Contraseña:</strong> ${data.password}</p>
-        <p class="aviso">⚠ Funciona hasta que lo elimines manualmente.</p>
-      </div>
-    `;
-
-  } catch {
-    resultado.innerHTML = `<p style="color:red;">Error creando demo</p>`;
-  }
-
-  btnDemo.disabled = false;
-  btnDemo.textContent = "🧪 Crear usuario demo";
-};
   const resultado = document.getElementById("resultadoAlta");
-  
-  const btnDemo = document.getElementById("btnDemoCloser");
-const demoPanel = document.getElementById("demoCloserPanel");
 
-btnDemo.onclick = () => {
-  demoPanel.style.display =
-    demoPanel.style.display === "none" ? "block" : "none";
-};
+  const btnCrearDemo = document.getElementById("btnCrearDemoCloser");
+  const btnVerDemo = document.getElementById("btnVerDemoCloser");
+  const demoPanel = document.getElementById("demoCloserPanel");
 
+  // Mostrar formulario alta real
   btnNuevo.onclick = () => {
     form.style.display = "block";
   };
 
+  // Crear closer REAL
   btnCrear.onclick = async () => {
 
-  const full_name = document.getElementById("nuevoNombre").value.trim();
-  const city = document.getElementById("nuevoMunicipio").value.trim();
-  const phone = document.getElementById("nuevoTelefono").value.trim();
+    const full_name = document.getElementById("nuevoNombre").value.trim();
+    const city = document.getElementById("nuevoMunicipio").value.trim();
+    const phone = document.getElementById("nuevoTelefono").value.trim();
 
-  // Validación FRONTEND inmediata
-  if (!full_name || !city) {
-    resultado.style.display = "block";
-    resultado.innerHTML = `<p style="color:red;">Nombre y municipio son obligatorios</p>`;
-    return; // 🔹 NO desactivamos botón si falla aquí
-  }
-
-  btnCrear.disabled = true;
-  btnCrear.textContent = "Creando...";
-
-  try {
-
-    const res = await fetch("https://stripe-backend-h1z1.vercel.app/api/create-closer", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ full_name, city, phone })
-    });
-
-    const data = await res.json();
-
-    if (!res.ok) {
+    if (!full_name || !city) {
       resultado.style.display = "block";
-      resultado.innerHTML = `<p style="color:red;">${data.error}</p>`;
+      resultado.innerHTML = `<p style="color:red;">Nombre y municipio son obligatorios</p>`;
       return;
     }
 
-    resultado.style.display = "block";
-    resultado.innerHTML = `
-      <div class="card-credenciales">
-        <h3>Closer creado correctamente</h3>
-        <p><strong>Usuario:</strong> ${data.username}</p>
-        <p><strong>Contraseña:</strong> ${data.password}</p>
-        <p class="aviso">⚠ Copia estas credenciales ahora. No volverán a mostrarse.</p>
-      </div>
-    `;
+    btnCrear.disabled = true;
+    btnCrear.textContent = "Creando...";
 
-    setTimeout(() => {
-      resultado.style.display = "none";
-    }, 3600000);
+    try {
 
-  } catch (err) {
-    resultado.style.display = "block";
-    resultado.innerHTML = `<p style="color:red;">Error servidor</p>`;
-  }
+      const res = await fetch(
+        "https://stripe-backend-h1z1.vercel.app/api/create-closer",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ full_name, city, phone })
+        }
+      );
 
-  // 🔹 SIEMPRE restaurar botón al final
-  btnCrear.disabled = false;
-  btnCrear.textContent = "Crear closer";
-};
+      const data = await res.json();
+
+      if (!res.ok) {
+        resultado.style.display = "block";
+        resultado.innerHTML = `<p style="color:red;">${data.error}</p>`;
+        btnCrear.disabled = false;
+        btnCrear.textContent = "Crear closer";
+        return;
+      }
+
+      resultado.style.display = "block";
+      resultado.innerHTML = `
+        <div class="card-credenciales">
+          <h3>Closer creado correctamente</h3>
+          <p><strong>Usuario:</strong> ${data.username}</p>
+          <p><strong>Contraseña:</strong> ${data.password}</p>
+          <p class="aviso">⚠ Copia estas credenciales ahora. No volverán a mostrarse.</p>
+        </div>
+      `;
+
+      setTimeout(() => {
+        resultado.style.display = "none";
+      }, 3600000);
+
+    } catch {
+      resultado.style.display = "block";
+      resultado.innerHTML = `<p style="color:red;">Error servidor</p>`;
+    }
+
+    btnCrear.disabled = false;
+    btnCrear.textContent = "Crear closer";
+  };
+
+  // Crear usuario DEMO
+  btnCrearDemo.onclick = async () => {
+
+    btnCrearDemo.disabled = true;
+    btnCrearDemo.textContent = "Creando demo...";
+
+    try {
+
+      const res = await fetch(
+        "https://stripe-backend-h1z1.vercel.app/api/create-demo-closer",
+        { method: "POST" }
+      );
+
+      const data = await res.json();
+
+      resultado.style.display = "block";
+      resultado.innerHTML = `
+        <div class="card-credenciales">
+          <h3>Usuario demo creado</h3>
+          <p><strong>Usuario:</strong> ${data.username}</p>
+          <p><strong>Contraseña:</strong> ${data.password}</p>
+          <p class="aviso">⚠ Funciona hasta que lo elimines manualmente.</p>
+        </div>
+      `;
+
+    } catch {
+      resultado.style.display = "block";
+      resultado.innerHTML = `<p style="color:red;">Error creando demo</p>`;
+    }
+
+    btnCrearDemo.disabled = false;
+    btnCrearDemo.textContent = "🧪 Crear usuario demo";
+  };
+
+  // Mostrar experiencia visual demo
+  btnVerDemo.onclick = () => {
+    demoPanel.style.display =
+      demoPanel.style.display === "none" ? "block" : "none";
+  };
+
 }
 </script>
 
