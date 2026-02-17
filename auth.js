@@ -91,7 +91,7 @@ setInterval(checkSession, 5000);
 
 async function enviarHeartbeat() {
   try {
-    await fetch("/api/health", {
+    await fetch("https://stripe-backend-h1z1.vercel.app/api/health", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
