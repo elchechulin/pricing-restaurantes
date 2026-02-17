@@ -124,6 +124,8 @@
   const content = document.getElementById("contentArea");
   
   const adminSection = document.getElementById("adminSection");
+  
+  let closerAbiertoId = null;
 
 async function loadSection(section) {
 
@@ -626,6 +628,7 @@ if (puedeEliminar) {
       header.appendChild(right);
 
       const details = document.createElement("div");
+      details.setAttribute("data-closer-details", closer.id);
       details.style.display = "none";
       details.style.marginTop = "12px";
       details.style.fontSize = "13px";
@@ -850,11 +853,28 @@ if (!closer.is_demo) {
       row.appendChild(details);
 
       header.onclick = () => {
-        details.style.display =
-          details.style.display === "none" ? "block" : "none";
-      };
+
+  const estaAbierto = details.style.display === "block";
+
+  // Cerrar todos antes
+  document.querySelectorAll("[data-closer-details]").forEach(el => {
+    el.style.display = "none";
+  });
+
+  if (!estaAbierto) {
+    details.style.display = "block";
+    closerAbiertoId = closer.id;
+  } else {
+    details.style.display = "none";
+    closerAbiertoId = null;
+  }
+};
 
       container.appendChild(row);
+      // Si este era el que estaba abierto, volver a abrirlo
+if (closerAbiertoId === closer.id) {
+  details.style.display = "block";
+}
     });
 
   } catch {
