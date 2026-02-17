@@ -85,6 +85,31 @@ function forceLogout(message) {
 
 // Comprobar cada 5 segundos
 setInterval(checkSession, 5000);
+// ===========================================
+// 🟢 HEARTBEAT · PRESENCIA EN TIEMPO REAL
+// ===========================================
+
+async function enviarHeartbeat() {
+  try {
+    await fetch("/api/health", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        user_id: Number(userId)
+      })
+    });
+  } catch (err) {
+    console.error("Error enviando heartbeat");
+  }
+}
+
+// Enviar cada 5 segundos
+setInterval(enviarHeartbeat, 5000);
+
+// Enviar uno inmediato al cargar
+enviarHeartbeat();
 
 // Comprobar también al cargar
 checkSession();
