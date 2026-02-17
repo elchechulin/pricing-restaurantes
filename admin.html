@@ -568,12 +568,14 @@ statusContainer.style.gap = "6px";
 statusContainer.style.fontSize = "13px";
 
 const onlineDot = document.createElement("div");
+onlineDot.setAttribute("data-online-dot", closer.id);
 onlineDot.style.width = "8px";
 onlineDot.style.height = "8px";
 onlineDot.style.borderRadius = "50%";
 onlineDot.style.background = closer.online ? "#22c55e" : "#6b7280";
 
 const onlineText = document.createElement("span");
+onlineText.setAttribute("data-online-text", closer.id);
 onlineText.textContent = closer.online ? "Online" : "Offline";
 
 const activeText = document.createElement("span");
@@ -881,18 +883,48 @@ if (closerAbiertoId === closer.id) {
     container.innerHTML = "<p>Error servidor</p>";
   }
 
-  // =============================
-  // 🔄 AUTO REFRESH CADA 5 SEGUNDOS
-  // =============================
 
-  if (window.closersInterval) {
-    clearInterval(window.closersInterval);
+}
+// ======================================
+// 🔄 REFRESH SOLO ONLINE / OFFLINE
+// ======================================
+
+async function refreshOnlineStatus() {
+
+  try {
+
+    const res = await fetch(
+      "https://stripe-backend-h1z1.vercel.app/api/list-closers"
+    );
+
+    const closers = await res.json();
+
+    closers.forEach(closer => {
+
+      const dot = document.querySelector(
+        `[data-online-dot="${closer.id}"]`
+      );
+
+      const text = document.querySelector(
+        `[data-online-text="${closer.id}"]`
+      );
+
+      if (dot && text) {
+        dot.style.background = closer.online ? "#22c55e" : "#6b7280";
+        text.textContent = closer.online ? "Online" : "Offline";
+      }
+
+    });
+
+  } catch (err) {
+    console.error("Error refrescando estado online");
   }
 
-  window.closersInterval = setInterval(() => {
-    initClosersSection();
-  }, 5000);
+}
 
+// Iniciar intervalo SOLO UNA VEZ
+if (!window.onlineInterval) {
+  window.onlineInterval = setInterval(refreshOnlineStatus, 5000);
 }
 </script>
 
