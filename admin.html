@@ -555,18 +555,35 @@ async function initClosersSection() {
       right.style.alignItems = "center";
       right.style.gap = "15px";
 
-      const statusDot = document.createElement("div");
-      statusDot.style.width = "10px";
-      statusDot.style.height = "10px";
-      statusDot.style.borderRadius = "50%";
-      statusDot.style.background = closer.is_active ? "#22c55e" : "#ef4444";
+      // =============================
+// 🟢 ONLINE / OFFLINE + ACTIVO
+// =============================
 
-      const statusText = document.createElement("span");
-      statusText.textContent = closer.is_active ? "Activo" : "Inactivo";
-      statusText.style.fontSize = "13px";
+const statusContainer = document.createElement("div");
+statusContainer.style.display = "flex";
+statusContainer.style.alignItems = "center";
+statusContainer.style.gap = "6px";
+statusContainer.style.fontSize = "13px";
 
-      right.appendChild(statusDot);
-      right.appendChild(statusText);
+const onlineDot = document.createElement("div");
+onlineDot.style.width = "8px";
+onlineDot.style.height = "8px";
+onlineDot.style.borderRadius = "50%";
+onlineDot.style.background = closer.online ? "#22c55e" : "#6b7280";
+
+const onlineText = document.createElement("span");
+onlineText.textContent = closer.online ? "Online" : "Offline";
+
+const activeText = document.createElement("span");
+activeText.style.marginLeft = "6px";
+activeText.style.opacity = "0.8";
+activeText.textContent = closer.is_active ? "· Activo" : "· Inactivo";
+
+statusContainer.appendChild(onlineDot);
+statusContainer.appendChild(onlineText);
+statusContainer.appendChild(activeText);
+
+right.appendChild(statusContainer);
 
       const ahora = new Date();
 const bajaDate = closer.baja_at ? new Date(closer.baja_at) : null;
@@ -843,6 +860,19 @@ if (!closer.is_demo) {
   } catch {
     container.innerHTML = "<p>Error servidor</p>";
   }
+
+  // =============================
+  // 🔄 AUTO REFRESH CADA 5 SEGUNDOS
+  // =============================
+
+  if (window.closersInterval) {
+    clearInterval(window.closersInterval);
+  }
+
+  window.closersInterval = setInterval(() => {
+    initClosersSection();
+  }, 5000);
+
 }
 </script>
 
