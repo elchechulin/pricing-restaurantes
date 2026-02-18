@@ -15,14 +15,21 @@ html, body {
 
 body {
   min-height: 100dvh;
+  color: #f1f5f9;
+  position: relative;
+}
+
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
   background:
     linear-gradient(
       rgba(10, 5, 20, 0.75),
       rgba(10, 5, 20, 0.75)
     ),
     url("assets/bgrestaurante.jpg") center / cover no-repeat;
-  background-attachment: scroll;
-  color: #f1f5f9;
+  z-index: -1;
 }
 
 /* ===============================
@@ -687,7 +694,7 @@ body.modal-abierto {
 =============================== */
 
 .login-body {
-  min-height: 100vh;
+  min-height: 100dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -968,4 +975,12 @@ body.modal-abierto {
 .login-body {
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+}
+
+html {
+  overscroll-behavior: none;
+}
+
+body {
+  overscroll-behavior-y: none;
 }
