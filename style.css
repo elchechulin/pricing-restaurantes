@@ -8,14 +8,20 @@
   font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
+html, body {
+  height: 100%;
+  overscroll-behavior: none;
+}
+
 body {
-  min-height: 100vh;
-  background: 
+  min-height: 100dvh;
+  background:
     linear-gradient(
       rgba(10, 5, 20, 0.75),
       rgba(10, 5, 20, 0.75)
     ),
-    url("assets/bgrestaurante.jpg") center / cover no-repeat fixed;
+    url("assets/bgrestaurante.jpg") center / cover no-repeat;
+  background-attachment: scroll;
   color: #f1f5f9;
 }
 
@@ -957,4 +963,9 @@ body.modal-abierto {
 
 .login-error-animate {
   animation: loginShake 0.45s ease;
+}
+
+.login-body {
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
