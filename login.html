@@ -4,66 +4,27 @@
   <meta charset="UTF-8">
   <title>Login</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #111;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      color: white;
-    }
-
-    .login-box {
-      background: #1e1e1e;
-      padding: 30px;
-      border-radius: 12px;
-      width: 300px;
-    }
-
-    input {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 15px;
-      border-radius: 6px;
-      border: none;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #e10600;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.9;
-    }
-
-    .error {
-      color: #ff4d4d;
-      font-size: 14px;
-      margin-top: 10px;
-    }
-  </style>
+  <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="login-body">
 
-  <div class="login-box">
-    <h2>Iniciar sesión</h2>
+  <div class="login-wrapper">
 
-    <input type="text" id="username" placeholder="Usuario">
-    <input type="password" id="password" placeholder="Contraseña">
+    <div class="login-card">
 
-    <button id="btnLogin">Entrar</button>
+      <img src="assets/logo.png" class="login-logo" alt="Logo">
 
-    <div id="error" class="error"></div>
+      <h2 class="login-title">Iniciar sesión</h2>
+
+      <input type="text" id="username" placeholder="Usuario" class="login-input">
+      <input type="password" id="password" placeholder="Contraseña" class="login-input">
+
+      <button id="btnLogin" class="login-button">ENTRAR</button>
+
+      <div id="error" class="login-error"></div>
+
+    </div>
+
   </div>
 
 <script src="login-frontend.js"></script>
