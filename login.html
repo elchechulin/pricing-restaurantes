@@ -7,6 +7,29 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body class="login-body">
+  
+  <svg width="0" height="0" style="position:absolute; pointer-events:none;">
+  <filter id="heatDistortion">
+    <feTurbulence
+      type="turbulence"
+      baseFrequency="0.008 0.02"
+      numOctaves="3"
+      seed="2"
+      result="turbulence">
+      <animate
+        attributeName="baseFrequency"
+        dur="8s"
+        values="0.008 0.02;0.01 0.025;0.008 0.02"
+        repeatCount="indefinite"/>
+    </feTurbulence>
+    <feDisplacementMap
+      in="SourceGraphic"
+      in2="turbulence"
+      scale="18"
+      xChannelSelector="R"
+      yChannelSelector="G"/>
+  </filter>
+</svg>
 
   <div class="login-wrapper">
 
@@ -28,5 +51,54 @@
   </div>
 
 <script src="login-frontend.js"></script>
+<script>
+(function() {
+  const wrapper = document.querySelector('.login-wrapper');
+  const maxTilt = 8;
+  let isHovering = false;
+
+  function applyTilt(x, y) {
+    wrapper.style.transform =
+      `rotateX(${y}deg) rotateY(${x}deg)`;
+  }
+
+  function resetTilt() {
+    wrapper.style.transform =
+      `rotateX(0deg) rotateY(0deg)`;
+  }
+
+  // Desktop refinado
+  wrapper.addEventListener('mouseenter', () => {
+    isHovering = true;
+  });
+
+  wrapper.addEventListener('mouseleave', () => {
+    isHovering = false;
+    resetTilt();
+  });
+
+  wrapper.addEventListener('mousemove', (e) => {
+    if (!isHovering) return;
+
+    const rect = wrapper.getBoundingClientRect();
+    const percentX = (e.offsetX / rect.width) - 0.5;
+    const percentY = (e.offsetY / rect.height) - 0.5;
+
+    const tiltX = percentX * maxTilt * 2;
+    const tiltY = -percentY * maxTilt * 2;
+
+    applyTilt(tiltX, tiltY);
+  });
+
+  // Móvil
+  if (window.DeviceOrientationEvent) {
+    window.addEventListener('deviceorientation', (event) => {
+      const tiltX = (event.gamma / 45) * maxTilt;
+      const tiltY = (event.beta / 45) * maxTilt;
+      applyTilt(tiltX, tiltY);
+    });
+  }
+})();
+</script>
 </body>
 </html>
