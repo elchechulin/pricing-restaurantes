@@ -467,6 +467,14 @@ function cerrarModalLlamadasSeguro() {
   =============================== */
   document.getElementById("calcular").addEventListener("click", (e) => {
   e.preventDefault();
+  // RESET DE ESTADO DE CIERRE EN NUEVO CÁLCULO
+if (!forzarModo) {
+  estadoCierre = "abierto";
+  onboardingActivo = false;
+
+  document.getElementById("btnCrearEnlaceInmediato").style.display = "none";
+  document.getElementById("btnCrearEnlaceSetup").style.display = "none";
+}
 
 document.getElementById("onboarding").style.display = "none";
 document.getElementById("btnWhatsappOnboarding").style.display = "none";
@@ -479,7 +487,15 @@ onboardingActivo = false;
     "Este cliente ya ha aceptado la propuesta.\n\n" +
     "¿Quieres recalcular igualmente?"
   );
+
   if (!continuar) return;
+
+  // 🔴 RESET COMPLETO SI DECIDE RECALCULAR
+  estadoCierre = "abierto";
+  onboardingActivo = false;
+
+  document.getElementById("btnCrearEnlaceInmediato").style.display = "none";
+  document.getElementById("btnCrearEnlaceSetup").style.display = "none";
 }
 // Reset de modo en cada nuevo cálculo
     if (!forzarModo) {
