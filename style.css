@@ -973,3 +973,325 @@ body.modal-abierto {
 html {
   background: #050505;
 }
+/* ===========================================
+   ADMIN VENTAS · ESTÉTICA PREMIUM NARANJA
+=========================================== */
+
+#ventasKPIs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 18px;
+  margin-bottom: 25px;
+}
+
+/* KPI PRINCIPAL */
+
+.kpi-main {
+  grid-column: 1 / -1;
+  padding: 35px 25px;
+  border-radius: 22px;
+  text-align: center;
+  position: relative;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 10, 5, 0.9),
+      rgba(10, 5, 5, 0.95)
+    );
+
+  border: 2px solid #ff4d00;
+
+  box-shadow:
+    0 0 25px rgba(255,80,0,0.6),
+    0 0 80px rgba(255,60,0,0.3),
+    inset 0 0 30px rgba(255,60,0,0.15);
+}
+
+/* glow animado suave */
+.kpi-main::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 22px;
+  background: linear-gradient(
+    90deg,
+    #ff3b00,
+    #ff6a00,
+    #ff3b00
+  );
+  z-index: -1;
+  filter: blur(18px);
+  opacity: 0.7;
+}
+
+/* título */
+.kpi-main-title {
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+/* número gigante */
+.kpi-main-number {
+  font-size: 56px;
+  font-weight: 800;
+  margin-top: 12px;
+  color: #ffffff;
+  text-shadow:
+    0 0 12px rgba(255,80,0,0.8),
+    0 0 25px rgba(255,50,0,0.6);
+}
+
+/* crecimiento */
+.kpi-main-growth {
+  margin-top: 14px;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.kpi-main-growth.positive {
+  color: #22c55e;
+}
+
+.kpi-main-growth.negative {
+  color: #ef4444;
+}
+
+.kpi-main-growth.neutral {
+  color: #94a3b8;
+}
+
+/* KPIs secundarios */
+
+.kpi-card {
+  padding: 22px;
+  border-radius: 18px;
+  text-align: center;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 10, 5, 0.85),
+      rgba(10, 5, 5, 0.95)
+    );
+
+  border: 1px solid rgba(255,120,0,0.4);
+
+  box-shadow:
+    0 0 15px rgba(255,60,0,0.25),
+    inset 0 0 20px rgba(255,60,0,0.08);
+}
+
+.kpi-card div {
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+.kpi-card strong {
+  display: block;
+  margin-top: 10px;
+  font-size: 24px;
+  font-weight: 700;
+}
+/* ===========================================
+   VENTAS · MARCO GENERAL PREMIUM
+=========================================== */
+
+.ventas-wrapper {
+  max-width: 420px;
+  margin: 30px auto 30px;
+  padding: 20px;
+  border-radius: 28px;
+  position: relative;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20, 10, 5, 0.85),
+      rgba(10, 5, 5, 0.95)
+    );
+
+  border: 2px solid #ff4d00;
+
+  box-shadow:
+    0 0 30px rgba(255,60,0,0.6),
+    0 0 90px rgba(255,40,0,0.25),
+    inset 0 0 40px rgba(255,60,0,0.1);
+}
+/* ===========================================
+   QUICK FILTER BUTTONS
+=========================================== */
+
+#ventasQuickFilters {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 10px;
+  margin-bottom: 25px;
+}
+
+#ventasQuickFilters button {
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,120,0,0.5);
+  background: rgba(20,10,5,0.8);
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+
+  box-shadow:
+    0 0 10px rgba(255,80,0,0.3);
+
+  transition:
+    background 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.15s ease;
+}
+
+#ventasQuickFilters button:hover {
+  box-shadow:
+    0 0 18px rgba(255,80,0,0.7);
+}
+
+#ventasQuickFilters button:active {
+  transform: scale(0.95);
+}
+/* ===========================================
+   FILTROS SELECT PREMIUM
+=========================================== */
+
+#filtroView,
+#filtroMes,
+#filtroYear,
+#filtroCloser {
+
+  width: 100%;
+  padding: 14px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,120,0,0.4);
+  background:
+    linear-gradient(
+      180deg,
+      rgba(20,10,5,0.85),
+      rgba(10,5,5,0.95)
+    );
+
+  color: #fff;
+  font-size: 14px;
+
+  box-shadow:
+    0 0 12px rgba(255,60,0,0.2);
+
+  appearance: none;
+}
+
+#filtroView:focus,
+#filtroMes:focus,
+#filtroYear:focus,
+#filtroCloser:focus {
+  outline: none;
+  box-shadow:
+    0 0 18px rgba(255,60,0,0.6);
+}
+#btnFiltrarVentas {
+  padding: 14px 22px;
+  border-radius: 16px;
+  border: none;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+
+  background: linear-gradient(
+    90deg,
+    #ff3b00,
+    #ff6a00
+  );
+
+  box-shadow:
+    0 10px 25px rgba(255,80,0,0.5);
+
+  transition: transform 0.15s ease;
+}
+
+#btnFiltrarVentas:active {
+  transform: scale(0.95);
+}
+/* ===========================================
+   TABLA VENTAS
+=========================================== */
+
+table {
+  background: rgba(15,10,5,0.85);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+thead tr {
+  background: rgba(255,80,0,0.2);
+}
+
+th, td {
+  padding: 14px;
+}
+
+tbody tr {
+  border-bottom: 1px solid rgba(255,120,0,0.2);
+}
+
+tbody tr:last-child {
+  border-bottom: none;
+}
+/* ===========================================
+   VENTAS · TÍTULO
+=========================================== */
+
+.ventas-title {
+  margin-bottom: 25px;
+  font-size: 20px;
+  font-weight: 700;
+  text-align: center;
+  text-shadow: 0 0 12px rgba(255,80,0,0.5);
+}
+
+/* ===========================================
+   CONTENEDOR FILTROS
+=========================================== */
+
+.ventas-filtros {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 25px;
+}
+
+/* ===========================================
+   TABLA VENTAS FINAL
+=========================================== */
+
+.ventas-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.ventas-table {
+  margin-top: 30px;
+}
+
+.ventas-table thead {
+  background: rgba(255,80,0,0.25);
+}
+
+.ventas-table th {
+  padding: 14px;
+  text-align: left;
+  font-weight: 600;
+}
+
+.ventas-table td {
+  padding: 14px;
+}
+.ventas-empty {
+  padding: 18px;
+  text-align: center;
+  opacity: 0.7;
+}

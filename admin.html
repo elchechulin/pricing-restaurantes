@@ -16,13 +16,22 @@
 
     /* ===== HEADER ===== */
     .topbar {
-      height: 60px;
-      background: #020617;
-      display: flex;
-      align-items: center;
-      padding: 0 20px;
-      border-bottom: 1px solid #1e293b;
-    }
+  height: 60px;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(20,10,5,0.95),
+      rgba(10,5,5,0.95)
+    );
+  display: flex;
+  align-items: center;
+  padding: 0 20px;
+
+  border-bottom: 1px solid rgba(255,80,0,0.3);
+
+  box-shadow:
+    0 0 20px rgba(255,60,0,0.3);
+}
 
     .menu-btn {
       font-size: 22px;
@@ -78,9 +87,9 @@
 
     /* ===== CONTENT ===== */
     .content {
-      padding: 30px;
-      transition: margin-left 0.3s ease;
-    }
+  padding: 20px 10px;
+  transition: margin-left 0.3s ease;
+}
 
     .content.shift {
       margin-left: 260px;
@@ -236,17 +245,11 @@ async function loadSection(section) {
 } else if (section === "ventas") {
 
   adminSection.innerHTML = `
-    <div style="max-width:1200px;margin:30px auto;">
+    <div class="ventas-wrapper">
 
-      <h2 style="margin-bottom:25px;">📊 Ventas</h2>
+      <h2 class="ventas-title">📊 Ventas</h2>
       <!-- BARRA FILTROS RÁPIDOS -->
-<div id="ventasQuickFilters" style="
-  display:flex;
-  gap:15px;
-  overflow-x:auto;
-  margin-bottom:20px;
-  padding-bottom:10px;
-">
+<div id="ventasQuickFilters">
 
   <button data-quick="all">Todos</button>
   <button data-quick="50">50%</button>
@@ -257,7 +260,7 @@ async function loadSection(section) {
 </div>
 
       <!-- FILTROS -->
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:25px;">
+      <div class="ventas-filtros">
 
         <select id="filtroView">
           <option value="active">Activos</option>
@@ -277,21 +280,21 @@ async function loadSection(section) {
       </div>
 
       <!-- KPIs -->
-      <div id="ventasKPIs" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:30px;"></div>
+      <div id="ventasKPIs"></div>
 
       <!-- TABLA -->
       <div style="overflow-x:auto;">
-        <table style="width:100%;border-collapse:collapse;">
+        <table class="ventas-table">
           <thead>
-            <tr style="background:#111;color:#fff;">
-              <th style="padding:10px;">Fecha</th>
-              <th style="padding:10px;">Closer</th>
-              <th style="padding:10px;">Servicio</th>
-              <th style="padding:10px;">Precio</th>
-              <th style="padding:10px;">Comisión</th>
-              <th style="padding:10px;">Estado</th>
-            </tr>
-          </thead>
+  <tr>
+    <th>Fecha</th>
+    <th>Closer</th>
+    <th>Servicio</th>
+    <th>Precio</th>
+    <th>Comisión</th>
+    <th>Estado</th>
+  </tr>
+</thead>
           <tbody id="ventasTabla"></tbody>
         </table>
       </div>
@@ -1162,63 +1165,49 @@ function renderKPIs(kpis) {
   const container = document.getElementById("ventasKPIs");
 
   container.innerHTML = `
-    <div style="
-  grid-column: 1 / -1;
-  background: linear-gradient(90deg,#0f172a,#1e293b);
-  color:#fff;
-  padding:25px;
-  border-radius:14px;
-  text-align:center;
-">
-  <div style="font-size:14px;opacity:0.8;">🔥 Nuevas ventas este mes</div>
-
-  <div style="font-size:32px;font-weight:700;margin-top:8px;">
-    ${kpis.new_sales_current_month}
+  <div class="kpi-main">
+    <div class="kpi-main-title">🔥 Nuevas ventas este mes</div>
+    <div class="kpi-main-number">
+      ${kpis.new_sales_current_month}
+    </div>
+    <div class="kpi-main-growth ${
+      kpis.growth_percentage > 0
+        ? "positive"
+        : kpis.growth_percentage < 0
+        ? "negative"
+        : "neutral"
+    }">
+      ${
+        kpis.growth_percentage > 0
+          ? "▲"
+          : kpis.growth_percentage < 0
+          ? "▼"
+          : "■"
+      }
+      ${kpis.growth_percentage}% vs mes anterior
+    </div>
   </div>
 
-  <div style="
-    margin-top:10px;
-    font-size:14px;
-    font-weight:600;
-    color: ${
-      kpis.growth_percentage > 0
-        ? "#22c55e"
-        : kpis.growth_percentage < 0
-        ? "#ef4444"
-        : "#94a3b8"
-    };
-  ">
-    ${
-      kpis.growth_percentage > 0
-        ? "▲"
-        : kpis.growth_percentage < 0
-        ? "▼"
-        : "■"
-    }
-    ${kpis.growth_percentage}% vs mes anterior
+  <div class="kpi-card">
+    <div>Total ventas</div>
+    <strong>${kpis.total_sales}</strong>
   </div>
-</div>
 
-    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
-      <div>Total ventas</div>
-      <strong style="font-size:22px;">${kpis.total_sales}</strong>
-    </div>
+  <div class="kpi-card">
+    <div>Facturación</div>
+    <strong>${Number(kpis.total_revenue).toFixed(2)} €</strong>
+  </div>
 
-    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
-      <div>Facturación</div>
-      <strong style="font-size:22px;">${Number(kpis.total_revenue).toFixed(2)} €</strong>
-    </div>
+  <div class="kpi-card">
+    <div>Comisiones</div>
+    <strong>${Number(kpis.total_commissions).toFixed(2)} €</strong>
+  </div>
 
-    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
-      <div>Comisiones</div>
-      <strong style="font-size:22px;">${Number(kpis.total_commissions).toFixed(2)} €</strong>
-    </div>
-
-    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
-      <div>Ticket medio</div>
-      <strong style="font-size:22px;">${Number(kpis.avg_ticket).toFixed(2)} €</strong>
-    </div>
-  `;
+  <div class="kpi-card">
+    <div>Ticket medio</div>
+    <strong>${Number(kpis.avg_ticket).toFixed(2)} €</strong>
+  </div>
+`;
 }
 
 function renderTabla(ventas) {
@@ -1227,23 +1216,22 @@ function renderTabla(ventas) {
   tbody.innerHTML = "";
 
   if (!ventas.length) {
-    tbody.innerHTML = `<tr><td colspan="6" style="padding:15px;text-align:center;">Sin resultados</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="6" class="ventas-empty">Sin resultados</td></tr>`;
     return;
   }
 
   ventas.forEach(v => {
 
     const row = document.createElement("tr");
-    row.style.borderBottom = "1px solid #ddd";
 
     row.innerHTML = `
-      <td style="padding:10px;">${new Date(v.created_at).toLocaleDateString()}</td>
-      <td style="padding:10px;">${v.username || "-"}</td>
-      <td style="padding:10px;">${v.service_type}</td>
-      <td style="padding:10px;">${v.monthly_price} €</td>
-      <td style="padding:10px;">${(v.monthly_price * v.commission_percentage / 100).toFixed(2)} €</td>
-      <td style="padding:10px;">${v.subscription_status}</td>
-    `;
+  <td>${new Date(v.created_at).toLocaleDateString()}</td>
+  <td>${v.username || "-"}</td>
+  <td>${v.service_type}</td>
+  <td>${v.monthly_price} €</td>
+  <td>${(v.monthly_price * v.commission_percentage / 100).toFixed(2)} €</td>
+  <td>${v.subscription_status}</td>
+`;
 
     tbody.appendChild(row);
   });
