@@ -1163,18 +1163,41 @@ function renderKPIs(kpis) {
 
   container.innerHTML = `
     <div style="
-      grid-column: 1 / -1;
-      background: linear-gradient(90deg,#0f172a,#1e293b);
-      color:#fff;
-      padding:25px;
-      border-radius:14px;
-      text-align:center;
-    ">
-      <div style="font-size:14px;opacity:0.8;">🔥 Nuevas ventas este mes</div>
-      <div style="font-size:32px;font-weight:700;margin-top:8px;">
-        ${kpis.new_sales_current_month}
-      </div>
-    </div>
+  grid-column: 1 / -1;
+  background: linear-gradient(90deg,#0f172a,#1e293b);
+  color:#fff;
+  padding:25px;
+  border-radius:14px;
+  text-align:center;
+">
+  <div style="font-size:14px;opacity:0.8;">🔥 Nuevas ventas este mes</div>
+
+  <div style="font-size:32px;font-weight:700;margin-top:8px;">
+    ${kpis.new_sales_current_month}
+  </div>
+
+  <div style="
+    margin-top:10px;
+    font-size:14px;
+    font-weight:600;
+    color: ${
+      kpis.growth_percentage > 0
+        ? "#22c55e"
+        : kpis.growth_percentage < 0
+        ? "#ef4444"
+        : "#94a3b8"
+    };
+  ">
+    ${
+      kpis.growth_percentage > 0
+        ? "▲"
+        : kpis.growth_percentage < 0
+        ? "▼"
+        : "■"
+    }
+    ${kpis.growth_percentage}% vs mes anterior
+  </div>
+</div>
 
     <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
       <div>Total ventas</div>
