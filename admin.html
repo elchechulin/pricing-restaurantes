@@ -1162,6 +1162,20 @@ function renderKPIs(kpis) {
   const container = document.getElementById("ventasKPIs");
 
   container.innerHTML = `
+    <div style="
+      grid-column: 1 / -1;
+      background: linear-gradient(90deg,#0f172a,#1e293b);
+      color:#fff;
+      padding:25px;
+      border-radius:14px;
+      text-align:center;
+    ">
+      <div style="font-size:14px;opacity:0.8;">🔥 Nuevas ventas este mes</div>
+      <div style="font-size:32px;font-weight:700;margin-top:8px;">
+        ${kpis.new_sales_current_month}
+      </div>
+    </div>
+
     <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
       <div>Total ventas</div>
       <strong style="font-size:22px;">${kpis.total_sales}</strong>
