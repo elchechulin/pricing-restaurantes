@@ -233,12 +233,57 @@ async function loadSection(section) {
 
   setTimeout(initClosersSection, 0);
 
-} else {
+} else if (section === "ventas") {
 
   adminSection.innerHTML = `
-    <h2>${section}</h2>
-    <p>Sección en construcción.</p>
+    <div style="max-width:1200px;margin:30px auto;">
+
+      <h2 style="margin-bottom:25px;">📊 Ventas</h2>
+
+      <!-- FILTROS -->
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:25px;">
+
+        <select id="filtroView">
+          <option value="active">Activos</option>
+          <option value="disabled">Desactivados</option>
+        </select>
+
+        <select id="filtroMes"></select>
+
+        <select id="filtroYear"></select>
+
+        <select id="filtroCloser">
+          <option value="">Todos los closers</option>
+        </select>
+
+        <button id="btnFiltrarVentas">Filtrar</button>
+
+      </div>
+
+      <!-- KPIs -->
+      <div id="ventasKPIs" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:30px;"></div>
+
+      <!-- TABLA -->
+      <div style="overflow-x:auto;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="background:#111;color:#fff;">
+              <th style="padding:10px;">Fecha</th>
+              <th style="padding:10px;">Closer</th>
+              <th style="padding:10px;">Servicio</th>
+              <th style="padding:10px;">Precio</th>
+              <th style="padding:10px;">Comisión</th>
+              <th style="padding:10px;">Estado</th>
+            </tr>
+          </thead>
+          <tbody id="ventasTabla"></tbody>
+        </table>
+      </div>
+
+    </div>
   `;
+
+  setTimeout(initVentasSection, 0);
 
 }
 }
@@ -964,6 +1009,136 @@ if (closerAbiertoId === closer.id) {
   }
 
 
+}
+
+async function initVentasSection() {
+
+  const selectMes = document.getElementById("filtroMes");
+  const selectYear = document.getElementById("filtroYear");
+  const selectCloser = document.getElementById("filtroCloser");
+
+  const meses = [
+    "Todos","Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  meses.forEach((m,i) => {
+    const opt = document.createElement("option");
+    opt.value = i === 0 ? "" : i;
+    opt.textContent = m;
+    selectMes.appendChild(opt);
+  });
+
+  const yearActual = new Date().getFullYear();
+  for (let y = yearActual; y >= 2023; y--) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    selectYear.appendChild(opt);
+  }
+
+  try {
+    const resClosers = await fetch("https://stripe-backend-h1z1.vercel.app/api/list-closers");
+    const closers = await resClosers.json();
+
+    closers.forEach(c => {
+      const opt = document.createElement("option");
+      opt.value = c.id;
+      opt.textContent = c.username;
+      selectCloser.appendChild(opt);
+    });
+
+  } catch {}
+
+  document.getElementById("btnFiltrarVentas").onclick = cargarVentas;
+
+  cargarVentas();
+}
+
+async function cargarVentas() {
+
+  const view = document.getElementById("filtroView").value;
+  const month = document.getElementById("filtroMes").value;
+  const year = document.getElementById("filtroYear").value;
+  const closer = document.getElementById("filtroCloser").value;
+
+  let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${view}`;
+
+  if (month) url += `&month=${month}`;
+  if (year) url += `&year=${year}`;
+  if (closer) url += `&closer_id=${closer}`;
+
+  try {
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("Error cargando ventas");
+      return;
+    }
+
+    renderKPIs(data.kpis);
+    renderTabla(data.sales);
+
+  } catch {
+    alert("Error servidor ventas");
+  }
+}
+
+function renderKPIs(kpis) {
+
+  const container = document.getElementById("ventasKPIs");
+
+  container.innerHTML = `
+    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
+      <div>Total ventas</div>
+      <strong style="font-size:22px;">${kpis.total_sales}</strong>
+    </div>
+
+    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
+      <div>Facturación</div>
+      <strong style="font-size:22px;">${Number(kpis.total_revenue).toFixed(2)} €</strong>
+    </div>
+
+    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
+      <div>Comisiones</div>
+      <strong style="font-size:22px;">${Number(kpis.total_commissions).toFixed(2)} €</strong>
+    </div>
+
+    <div style="background:#111;color:#fff;padding:20px;border-radius:12px;">
+      <div>Ticket medio</div>
+      <strong style="font-size:22px;">${Number(kpis.avg_ticket).toFixed(2)} €</strong>
+    </div>
+  `;
+}
+
+function renderTabla(ventas) {
+
+  const tbody = document.getElementById("ventasTabla");
+  tbody.innerHTML = "";
+
+  if (!ventas.length) {
+    tbody.innerHTML = `<tr><td colspan="6" style="padding:15px;text-align:center;">Sin resultados</td></tr>`;
+    return;
+  }
+
+  ventas.forEach(v => {
+
+    const row = document.createElement("tr");
+    row.style.borderBottom = "1px solid #ddd";
+
+    row.innerHTML = `
+      <td style="padding:10px;">${new Date(v.created_at).toLocaleDateString()}</td>
+      <td style="padding:10px;">${v.username || "-"}</td>
+      <td style="padding:10px;">${v.service_type}</td>
+      <td style="padding:10px;">${v.monthly_price} €</td>
+      <td style="padding:10px;">${(v.monthly_price * v.commission_percentage / 100).toFixed(2)} €</td>
+      <td style="padding:10px;">${v.subscription_status}</td>
+    `;
+
+    tbody.appendChild(row);
+  });
 }
 // ======================================
 // 🔄 REFRESH SOLO ONLINE / OFFLINE
