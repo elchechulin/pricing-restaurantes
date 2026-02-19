@@ -239,6 +239,22 @@ async function loadSection(section) {
     <div style="max-width:1200px;margin:30px auto;">
 
       <h2 style="margin-bottom:25px;">📊 Ventas</h2>
+      <!-- BARRA FILTROS RÁPIDOS -->
+<div id="ventasQuickFilters" style="
+  display:flex;
+  gap:15px;
+  overflow-x:auto;
+  margin-bottom:20px;
+  padding-bottom:10px;
+">
+
+  <button data-quick="all">Todos</button>
+  <button data-quick="50">50%</button>
+  <button data-quick="35">35%</button>
+  <button data-quick="25">25%</button>
+  <button data-quick="disabled">Desactivados</button>
+
+</div>
 
       <!-- FILTROS -->
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:25px;">
@@ -1029,13 +1045,19 @@ async function initVentasSection() {
     selectMes.appendChild(opt);
   });
 
-  const yearActual = new Date().getFullYear();
-  for (let y = yearActual; y >= 2023; y--) {
-    const opt = document.createElement("option");
-    opt.value = y;
-    opt.textContent = y;
-    selectYear.appendChild(opt);
-  }
+  // Opción Todos los años
+const optAllYears = document.createElement("option");
+optAllYears.value = "";
+optAllYears.textContent = "Todos los años";
+selectYear.appendChild(optAllYears);
+
+const yearActual = new Date().getFullYear();
+for (let y = yearActual; y >= 2023; y--) {
+  const opt = document.createElement("option");
+  opt.value = y;
+  opt.textContent = y;
+  selectYear.appendChild(opt);
+}
 
   try {
     const resClosers = await fetch("https://stripe-backend-h1z1.vercel.app/api/list-closers");
@@ -1051,8 +1073,57 @@ async function initVentasSection() {
   } catch {}
 
   document.getElementById("btnFiltrarVentas").onclick = cargarVentas;
+  
+  document.querySelectorAll("#ventasQuickFilters button").forEach(btn => {
+
+  btn.onclick = () => {
+
+    const type = btn.dataset.quick;
+
+    if (type === "disabled") {
+      document.getElementById("filtroView").value = "disabled";
+      document.getElementById("filtroCloser").value = "";
+      document.getElementById("filtroMes").value = "";
+document.getElementById("filtroYear").value = "";
+    } else {
+      document.getElementById("filtroView").value = "active";
+    }
+
+    if (type === "50" || type === "35" || type === "25") {
+      document.getElementById("filtroMes").value = "";
+      document.getElementById("filtroYear").value = "";
+      cargarVentasQuick(type);
+    } else {
+      cargarVentas();
+    }
+
+  };
+
+});
 
   cargarVentas();
+  
+  async function cargarVentasQuick(commission) {
+
+  let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=active&commission=${commission}`;
+
+  try {
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("Error cargando ventas");
+      return;
+    }
+
+    renderKPIs(data.kpis);
+    renderTabla(data.sales);
+
+  } catch {
+    alert("Error servidor ventas");
+  }
+}
 }
 
 async function cargarVentas() {
