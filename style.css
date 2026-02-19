@@ -1103,6 +1103,7 @@ html {
   padding: 20px;
   border-radius: 28px;
   position: relative;
+  z-index: 1;
 
   background:
     linear-gradient(
@@ -1294,4 +1295,112 @@ tbody tr:last-child {
   padding: 18px;
   text-align: center;
   opacity: 0.7;
+}
+/* ===================================================
+   SISTEMA PARTÍCULAS PROFESIONAL DEFINITIVO
+=================================================== */
+
+.particles-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+/* Asegurar que todo el contenido esté encima */
+.topbar,
+.sidebar,
+.content,
+.ventas-wrapper {
+  position: relative;
+  z-index: 2;
+}
+
+/* =========================
+   CAPA TRASERA (lejana)
+========================= */
+
+.particles-back {
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    radial-gradient(circle at 10% 20%, rgba(255,120,0,0.25) 2px, transparent 4px),
+    radial-gradient(circle at 80% 40%, rgba(255,100,0,0.2) 2px, transparent 4px),
+    radial-gradient(circle at 40% 80%, rgba(255,150,0,0.22) 2px, transparent 4px),
+    radial-gradient(circle at 70% 60%, rgba(255,80,0,0.2) 2px, transparent 4px);
+
+  animation: moveBack 60s linear infinite;
+  filter: blur(1.5px) drop-shadow(0 0 6px rgba(255,140,0,0.6));
+  opacity: 0.8;
+}
+
+/* =========================
+   CAPA MEDIA
+========================= */
+
+.particles-mid {
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    radial-gradient(circle at 20% 30%, rgba(255,150,0,0.45) 3px, transparent 6px),
+    radial-gradient(circle at 60% 70%, rgba(255,120,0,0.4) 3px, transparent 6px),
+    radial-gradient(circle at 85% 25%, rgba(255,170,0,0.42) 3px, transparent 6px);
+
+  animation: moveMid 35s linear infinite;
+  filter: blur(0.8px) drop-shadow(0 0 10px rgba(255,160,0,0.8));
+  opacity: 0.9;
+}
+
+/* =========================
+   CAPA FRONTAL
+========================= */
+
+.particles-front {
+  position: absolute;
+  inset: 0;
+
+  background-image:
+    radial-gradient(circle at 30% 50%, rgba(255,200,0,0.8) 4px, transparent 8px),
+    radial-gradient(circle at 75% 30%, rgba(255,150,0,0.75) 4px, transparent 8px),
+    radial-gradient(circle at 55% 15%, rgba(255,180,0,0.7) 4px, transparent 8px);
+
+  animation: moveFront 20s linear infinite;
+  opacity: 1;
+  filter: drop-shadow(0 0 18px rgba(255,180,0,1));
+}
+
+/* =========================
+   MOVIMIENTOS MULTIDIRECCIÓN
+========================= */
+
+/* MOVIMIENTO CONTINUO SIN REBOTE */
+
+@keyframes moveBack {
+  from {
+    transform: translateY(0) translateX(0);
+  }
+  to {
+    transform: translateY(-120vh) translateX(80px);
+  }
+}
+
+@keyframes moveMid {
+  from {
+    transform: translateY(0) translateX(0);
+  }
+  to {
+    transform: translateY(-140vh) translateX(-120px);
+  }
+}
+
+@keyframes moveFront {
+  from {
+    transform: translateY(0) translateX(0);
+  }
+  to {
+    transform: translateY(-160vh) translateX(160px);
+  }
 }
