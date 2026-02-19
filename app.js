@@ -686,6 +686,7 @@ function interpolar(a, b, t) {
 }
 
     let modelo = "Estandar";
+    window.ULTIMO_SERVICE_TYPE = escenarioAplicado;
 let baseMensual = BASE.estandar.mensual;
 let baseSetup = BASE.estandar.setup;
 
@@ -1468,11 +1469,12 @@ if (localStorage.getItem("modo_demo") === "true") {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mensualidad,
-          setup: 0,
-          modo: "inmediato",
-          closer_id: usuarioId
-        })
+  mensualidad,
+  setup: 0,
+  modo: "inmediato",
+  closer_id: usuarioId,
+  service_type: window.ULTIMO_SERVICE_TYPE
+})
       }
     );
 
@@ -1541,11 +1543,12 @@ if (localStorage.getItem("modo_demo") === "true") {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          mensualidad,
-          setup,
-          modo: "setup",
-          closer_id: usuarioId
-        })
+  mensualidad,
+  setup,
+  modo: "setup",
+  closer_id: usuarioId,
+  service_type: window.ULTIMO_SERVICE_TYPE
+})
       }
     );
 
