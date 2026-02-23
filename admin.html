@@ -135,6 +135,7 @@
   const adminSection = document.getElementById("adminSection");
   
   let closerAbiertoId = null;
+  let currentViewMode = "all";
 
 async function loadSection(section) {
 
@@ -248,7 +249,20 @@ async function loadSection(section) {
     <div class="ventas-wrapper">
 
       <h2 class="ventas-title">📊 Ventas</h2>
-      <!-- BARRA FILTROS RÁPIDOS -->
+      <!-- ===== NIVEL 1 · VISTA ESTRUCTURAL ===== -->
+<div id="ventasViewTabs" style="margin-bottom:12px;">
+
+  <button data-view="all" class="view-tab active">
+    Todos
+  </button>
+
+  <button data-view="closers" class="view-tab">
+    Closers
+  </button>
+
+</div>
+
+<!-- ===== NIVEL 2 · FILTROS RÁPIDOS ===== -->
 <div id="ventasQuickFilters">
 
   <button data-quick="all">Todos</button>
@@ -1077,6 +1091,26 @@ for (let y = yearActual; y >= 2023; y--) {
 
   document.getElementById("btnFiltrarVentas").onclick = cargarVentas;
   
+  // ============================
+// NIVEL 1 · VISTA ESTRUCTURAL
+// ============================
+
+document.querySelectorAll("#ventasViewTabs button").forEach(btn => {
+
+  btn.onclick = () => {
+
+    document.querySelectorAll("#ventasViewTabs button")
+      .forEach(b => b.classList.remove("active"));
+
+    btn.classList.add("active");
+
+    currentViewMode = btn.dataset.view;
+
+    cargarVentas();
+  };
+
+});
+  
   document.querySelectorAll("#ventasQuickFilters button").forEach(btn => {
 
   btn.onclick = () => {
@@ -1104,11 +1138,15 @@ document.getElementById("filtroYear").value = "";
 
 });
 
-  cargarVentas();
-  
-  async function cargarVentasQuick(commission) {
+cargarVentas();
 
-  let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=active&commission=${commission}`;
+}
+
+async function cargarVentasQuick(commission) {
+
+  let viewParam = currentViewMode === "closers" ? "closers" : "active";
+
+  let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${viewParam}&commission=${commission}`;
 
   try {
 
@@ -1127,7 +1165,7 @@ document.getElementById("filtroYear").value = "";
     alert("Error servidor ventas");
   }
 }
-}
+
 
 async function cargarVentas() {
 
@@ -1136,7 +1174,9 @@ async function cargarVentas() {
   const year = document.getElementById("filtroYear").value;
   const closer = document.getElementById("filtroCloser").value;
 
-  let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${view}`;
+  let viewParam = currentViewMode === "closers" ? "closers" : view;
+
+let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${viewParam}`;
 
   if (month) url += `&month=${month}`;
   if (year) url += `&year=${year}`;
