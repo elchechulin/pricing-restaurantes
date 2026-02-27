@@ -128,6 +128,12 @@
   box-shadow: 0 0 12px rgba(255,60,0,0.4);
 }
 
+@keyframes pulseTop {
+  0%   { box-shadow: 0 0 0px rgba(255,215,0,0.0); }
+  50%  { box-shadow: 0 0 18px rgba(255,215,0,0.6); }
+  100% { box-shadow: 0 0 0px rgba(255,215,0,0.0); }
+}
+
   </style>
 </head>
 
@@ -1257,6 +1263,7 @@ let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${v
     renderKPIs(data.kpis);
 
 if (currentViewMode === "closers") {
+  renderMonthlyRanking(data.monthly_ranking);
   renderCloserKPIs(data.closer_kpis);
 }
 
@@ -1345,6 +1352,110 @@ function renderCloserKPIs(closers) {
             ${c.growth_percentage}%
           </strong>
         </div>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  container.innerHTML += html;
+}
+
+// ===============================
+// 🏆 RENDER RANKING MENSUAL
+// ===============================
+
+// ===============================
+// 🏆 RENDER RANKING MENSUAL PRO
+// ===============================
+
+function renderMonthlyRanking(ranking) {
+
+  const container = document.getElementById("ventasKPIs");
+
+  const now = new Date();
+  const monthName = now.toLocaleString("es-ES", { month: "long" });
+  const year = now.getFullYear();
+
+  // 🔒 Si no hay ventas este mes
+  if (!ranking || ranking.length === 0) {
+
+    container.innerHTML += `
+      <div style="margin-top:30px;margin-bottom:20px;opacity:0.6;">
+        <div style="font-size:18px;font-weight:800;margin-bottom:10px;">
+          🏆 Ranking mensual · ${monthName} ${year}
+        </div>
+        <div style="
+          padding:20px;
+          border-radius:12px;
+          background:#0f172a;
+          text-align:center;
+          font-weight:600;
+        ">
+          Sin ventas registradas este mes
+        </div>
+      </div>
+    `;
+
+    return;
+  }
+
+  // 🔢 Calcular total mensual
+  const totalMonthRevenue = ranking.reduce(
+    (acc, r) => acc + Number(r.monthly_revenue),
+    0
+  );
+
+  let html = `
+    <div style="margin-top:30px;margin-bottom:20px;">
+      <div style="font-size:18px;font-weight:800;margin-bottom:15px;">
+        🏆 Ranking mensual · ${monthName} ${year}
+      </div>
+  `;
+
+  ranking.forEach(r => {
+
+    let medal = "";
+    if (r.position === 1) medal = "🥇";
+    if (r.position === 2) medal = "🥈";
+    if (r.position === 3) medal = "🥉";
+
+    const contribution = totalMonthRevenue > 0
+      ? ((r.monthly_revenue / totalMonthRevenue) * 100).toFixed(1)
+      : 0;
+
+    html += `
+      <div style="
+        display:flex;
+        justify-content:space-between;
+        align-items:center;
+        padding:14px 18px;
+        margin-bottom:12px;
+        border-radius:14px;
+        background:${r.position === 1 
+          ? "linear-gradient(90deg,#3b2f00,#5b4500)"
+          : r.position === 2
+          ? "linear-gradient(90deg,#2e2e2e,#4a4a4a)"
+          : r.position === 3
+          ? "linear-gradient(90deg,#3a1f00,#5a3000)"
+          : "#0f172a"};
+        ${r.position === 1 ? "animation: pulseTop 2s infinite;" : ""}
+      ">
+
+        <div style="font-weight:700;">
+          ${medal} ${r.position}. ${r.username}
+        </div>
+
+        <div style="font-size:13px;text-align:right;">
+          <div><strong>${Number(r.monthly_revenue).toFixed(2)} €</strong></div>
+          <div style="opacity:0.7;">
+            ${r.monthly_sales} ventas
+          </div>
+          <div style="opacity:0.6;font-size:12px;">
+            ${contribution}% del mes
+          </div>
+        </div>
+
       </div>
     `;
   });
