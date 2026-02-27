@@ -94,6 +94,40 @@
     .content.shift {
       margin-left: 260px;
     }
+    
+    /* =========================
+   TABS VENTAS · ESTADO ACTIVO
+========================= */
+
+#ventasViewTabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.view-tab {
+  padding: 8px 16px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.08);
+  background: #0f172a;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.view-tab:hover {
+  background: #1e293b;
+  color: #fff;
+}
+
+.view-tab.active {
+  background: linear-gradient(90deg,#ff3b00,#ff6a00);
+  color: #fff;
+  border: 1px solid rgba(255,80,0,0.5);
+  box-shadow: 0 0 12px rgba(255,60,0,0.4);
+}
+
   </style>
 </head>
 
@@ -1047,6 +1081,14 @@ if (closerAbiertoId === closer.id) {
 async function initVentasSection() {
 
   const selectMes = document.getElementById("filtroMes");
+  // 🔹 RECUPERAR TAB GUARDADA EN SESSION
+const savedTab = sessionStorage.getItem("ventasActiveTab");
+
+if (savedTab === "closers") {
+  currentViewMode = "closers";
+} else {
+  currentViewMode = "all";
+}
   const selectYear = document.getElementById("filtroYear");
   const selectCloser = document.getElementById("filtroCloser");
 
@@ -1095,6 +1137,18 @@ for (let y = yearActual; y >= 2023; y--) {
 // NIVEL 1 · VISTA ESTRUCTURAL
 // ============================
 
+// 🔹 ACTIVAR VISUALMENTE LA TAB CORRECTA
+document.querySelectorAll("#ventasViewTabs button")
+  .forEach(b => b.classList.remove("active"));
+
+const activeButton = document.querySelector(
+  `#ventasViewTabs button[data-view="${currentViewMode}"]`
+);
+
+if (activeButton) {
+  activeButton.classList.add("active");
+}
+
 document.querySelectorAll("#ventasViewTabs button").forEach(btn => {
 
   btn.onclick = () => {
@@ -1105,6 +1159,9 @@ document.querySelectorAll("#ventasViewTabs button").forEach(btn => {
     btn.classList.add("active");
 
     currentViewMode = btn.dataset.view;
+
+    // 🔹 GUARDAR EN SESSION
+    sessionStorage.setItem("ventasActiveTab", currentViewMode);
 
     cargarVentas();
   };
@@ -1159,7 +1216,12 @@ async function cargarVentasQuick(commission) {
     }
 
     renderKPIs(data.kpis);
-    renderTabla(data.sales);
+
+if (currentViewMode === "closers") {
+  renderCloserKPIs(data.closer_kpis);
+}
+
+renderTabla(data.sales);
 
   } catch {
     alert("Error servidor ventas");
@@ -1193,7 +1255,12 @@ let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${v
     }
 
     renderKPIs(data.kpis);
-    renderTabla(data.sales);
+
+if (currentViewMode === "closers") {
+  renderCloserKPIs(data.closer_kpis);
+}
+
+renderTabla(data.sales);
 
   } catch {
     alert("Error servidor ventas");
@@ -1248,6 +1315,43 @@ function renderKPIs(kpis) {
     <strong>${Number(kpis.avg_ticket).toFixed(2)} €</strong>
   </div>
 `;
+}
+
+function renderCloserKPIs(closers) {
+
+  const container = document.getElementById("ventasKPIs");
+
+  if (!closers || !closers.length) return;
+
+  let html = `<div style="margin-top:30px;">`;
+
+  closers.forEach(c => {
+
+    html += `
+      <div class="kpi-card" style="margin-bottom:15px;">
+        <div style="font-weight:700;margin-bottom:6px;">
+          ${c.username}
+        </div>
+
+        <div>Ventas activas: <strong>${c.total_sales}</strong></div>
+        <div>Facturación: <strong>${Number(c.total_revenue).toFixed(2)} €</strong></div>
+        <div>Comisiones: <strong>${Number(c.total_commissions).toFixed(2)} €</strong></div>
+        <div>Ticket medio: <strong>${Number(c.avg_ticket).toFixed(2)} €</strong></div>
+        <div style="margin-top:6px;">
+          Crecimiento:
+          <strong style="
+            color: ${c.growth_percentage > 0 ? '#22c55e' : c.growth_percentage < 0 ? '#ef4444' : '#9ca3af'}
+          ">
+            ${c.growth_percentage}%
+          </strong>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  container.innerHTML += html;
 }
 
 function renderTabla(ventas) {
