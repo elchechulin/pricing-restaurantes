@@ -1284,11 +1284,11 @@ const annualWrapper = document.getElementById("annualToggleWrapper");
 
 if (currentViewMode === "closers") {
 
+  renderYTD(data.ytd);
   renderMonthlyRanking(data.monthly_ranking);
   renderCloserKPIs(data.closer_kpis);
 
   annualWrapper.style.display = "block";
-
   initAnnualControls(data);
 
 } else {
@@ -1492,6 +1492,94 @@ function renderMonthlyRanking(ranking) {
   });
 
   html += `</div>`;
+
+  container.innerHTML += html;
+}
+
+// ===============================
+// 📈 RENDER YTD PROFESIONAL
+// ===============================
+
+function renderYTD(ytd) {
+
+  if (!ytd || !ytd.current) return;
+
+  const container = document.getElementById("ventasKPIs");
+
+  const growthColor = (value) => {
+    if (value > 0) return "#22c55e";
+    if (value < 0) return "#ef4444";
+    return "#9ca3af";
+  };
+
+  const html = `
+    <div style="
+      margin-top:30px;
+      margin-bottom:30px;
+      padding:22px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      border:1px solid rgba(255,255,255,0.08);
+    ">
+
+      <div style="
+        font-size:18px;
+        font-weight:800;
+        margin-bottom:20px;
+      ">
+        📈 Indicador acumulado anual (YTD)
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px,1fr));
+        gap:18px;
+      ">
+
+        <div>
+          <div style="opacity:0.7;font-size:13px;">Ventas acumuladas</div>
+          <div style="font-size:22px;font-weight:700;">
+            ${ytd.current.total_sales}
+          </div>
+          <div style="font-size:12px;color:${growthColor(ytd.growth.sales_growth_percentage)}">
+            ${ytd.growth.sales_growth_percentage}% vs año anterior
+          </div>
+        </div>
+
+        <div>
+          <div style="opacity:0.7;font-size:13px;">Facturación acumulada</div>
+          <div style="font-size:22px;font-weight:700;">
+            ${Number(ytd.current.total_revenue).toFixed(2)} €
+          </div>
+          <div style="font-size:12px;color:${growthColor(ytd.growth.revenue_growth_percentage)}">
+            ${ytd.growth.revenue_growth_percentage}% vs año anterior
+          </div>
+        </div>
+
+        <div>
+          <div style="opacity:0.7;font-size:13px;">Comisiones acumuladas</div>
+          <div style="font-size:22px;font-weight:700;">
+            ${Number(ytd.current.total_commissions).toFixed(2)} €
+          </div>
+          <div style="font-size:12px;color:${growthColor(ytd.growth.commissions_growth_percentage)}">
+            ${ytd.growth.commissions_growth_percentage}% vs año anterior
+          </div>
+        </div>
+
+        <div>
+          <div style="opacity:0.7;font-size:13px;">Proyección fin de año</div>
+          <div style="font-size:20px;font-weight:700;">
+            ${Number(ytd.forecast.projected_revenue).toFixed(2)} €
+          </div>
+          <div style="font-size:12px;opacity:0.7;">
+            ${Number(ytd.forecast.projected_sales).toFixed(1)} ventas estimadas
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  `;
 
   container.innerHTML += html;
 }
