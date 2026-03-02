@@ -134,6 +134,12 @@
   100% { box-shadow: 0 0 0px rgba(255,215,0,0.0); }
 }
 
+@keyframes pulseTopAnnual {
+  0%   { box-shadow: 0 0 0px rgba(0,200,255,0.0); }
+  50%  { box-shadow: 0 0 20px rgba(0,200,255,0.8); }
+  100% { box-shadow: 0 0 0px rgba(0,200,255,0.0); }
+}
+
   </style>
 </head>
 
@@ -334,7 +340,19 @@ async function loadSection(section) {
       </div>
 
       <!-- KPIs -->
-      <div id="ventasKPIs"></div>
+<div id="ventasKPIs"></div>
+
+<!-- BOTÓN VISTA ANUAL -->
+<div id="annualToggleWrapper" style="margin-top:25px; display:none;">
+  <button id="btnToggleAnnual" class="view-tab">
+    📊 Ver anual
+  </button>
+
+  <select id="annualYearSelect" style="margin-left:10px; display:none;"></select>
+</div>
+
+<!-- CONTENEDOR ANUAL -->
+<div id="annualContainer" style="display:none; margin-top:25px;"></div>
 
       <!-- TABLA -->
       <div style="overflow-x:auto;">
@@ -1262,9 +1280,22 @@ let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${v
 
     renderKPIs(data.kpis);
 
+const annualWrapper = document.getElementById("annualToggleWrapper");
+
 if (currentViewMode === "closers") {
+
   renderMonthlyRanking(data.monthly_ranking);
   renderCloserKPIs(data.closer_kpis);
+
+  annualWrapper.style.display = "block";
+
+  initAnnualControls(data);
+
+} else {
+
+  annualWrapper.style.display = "none";
+  document.getElementById("annualContainer").style.display = "none";
+
 }
 
 renderTabla(data.sales);
@@ -1496,6 +1527,144 @@ function renderTabla(ventas) {
     tbody.appendChild(row);
   });
 }
+
+// ======================================
+// 📊 VISTA ANUAL CONTROLES
+// ======================================
+
+function initAnnualControls(initialData) {
+
+  const btn = document.getElementById("btnToggleAnnual");
+  const container = document.getElementById("annualContainer");
+  const yearSelect = document.getElementById("annualYearSelect");
+
+  const currentYear = new Date().getFullYear();
+
+  // Generar años (actual - 4)
+  yearSelect.innerHTML = "";
+  for (let i = 0; i < 5; i++) {
+    const y = currentYear - i;
+    const option = document.createElement("option");
+    option.value = y;
+    option.textContent = y;
+    yearSelect.appendChild(option);
+  }
+
+  btn.onclick = async () => {
+
+    if (container.style.display === "none") {
+
+      container.style.display = "block";
+      yearSelect.style.display = "inline-block";
+
+      renderAnnual(initialData);
+
+    } else {
+
+      container.style.display = "none";
+      yearSelect.style.display = "none";
+
+    }
+  };
+
+  yearSelect.onchange = async () => {
+
+    const selectedYear = yearSelect.value;
+
+    const res = await fetch(
+      `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=closers&year=${selectedYear}`
+    );
+
+    const data = await res.json();
+
+    renderAnnual(data);
+
+  };
+
+}
+
+function renderAnnual(data) {
+
+  const container = document.getElementById("annualContainer");
+
+  if (!data.annual_summary) {
+    container.innerHTML = "<div>Sin datos anuales</div>";
+    return;
+  }
+
+  let html = `
+    <div style="margin-bottom:20px;">
+      <div style="font-weight:800;font-size:18px;margin-bottom:10px;">
+        📈 Resumen anual
+      </div>
+      <div class="kpi-card">
+        Ventas: ${data.annual_summary.total_sales}
+        <br>
+        Facturación: ${Number(data.annual_summary.total_revenue).toFixed(2)} €
+      </div>
+    </div>
+  `;
+
+  // ================= RANKING ANUAL =================
+
+  if (data.annual_ranking.length > 0) {
+
+    html += `
+      <div style="margin-bottom:20px;">
+        <div style="font-weight:800;font-size:18px;margin-bottom:10px;">
+          🏆 Ranking anual
+        </div>
+    `;
+
+    data.annual_ranking.forEach(r => {
+
+      html += `
+        <div style="
+          padding:14px 18px;
+          margin-bottom:12px;
+          border-radius:14px;
+          background:#0f172a;
+          ${r.position === 1 ? "animation: pulseTopAnnual 2s infinite;" : ""}
+        ">
+          ${r.position}. ${r.username}
+          <br>
+          ${Number(r.yearly_revenue).toFixed(2)} € 
+          (${r.yearly_sales} ventas)
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  }
+
+  // ================= DESGLOSE MENSUAL =================
+
+  if (data.annual_monthly_breakdown.length > 0) {
+
+    html += `
+      <div>
+        <div style="font-weight:800;font-size:18px;margin-bottom:10px;">
+          📅 Desglose mensual
+        </div>
+    `;
+
+    data.annual_monthly_breakdown.forEach(m => {
+
+      html += `
+        <div class="kpi-card" style="margin-bottom:10px;">
+          Mes ${m.month} → 
+          ${m.total_sales} ventas — 
+          ${Number(m.total_revenue).toFixed(2)} €
+        </div>
+      `;
+    });
+
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
 // ======================================
 // 🔄 REFRESH SOLO ONLINE / OFFLINE
 // ======================================
