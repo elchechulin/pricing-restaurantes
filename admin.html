@@ -182,6 +182,7 @@
   
   let closerAbiertoId = null;
   let currentViewMode = "all";
+  let ventaDetalleAbierta = null;
 
 async function loadSection(section) {
 
@@ -1650,6 +1651,9 @@ function renderTabla(ventas) {
   ventas.forEach(v => {
 
     const row = document.createElement("tr");
+    
+    row.style.cursor = "pointer";
+row.onclick = () => abrirDetalleVenta(v.id);
 
     row.innerHTML = `
   <td>${new Date(v.created_at).toLocaleDateString()}</td>
@@ -1666,6 +1670,298 @@ function renderTabla(ventas) {
 `;
 
     tbody.appendChild(row);
+    
+    async function abrirDetalleVenta(id) {
+
+  ventaDetalleAbierta = id;
+
+  try {
+
+    const res = await fetch(
+      `https://stripe-backend-h1z1.vercel.app/api/health?type=sale_detail&id=${id}`
+    );
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("Error cargando detalle");
+      return;
+    }
+
+    renderDetalleVenta(data);
+
+  } catch {
+    alert("Error servidor");
+  }
+
+}
+
+function renderDetalleVenta(data) {
+
+  const container = document.querySelector(".ventas-wrapper");
+
+  const s = data.sale;
+  const stripe = data.stripe || {};
+
+  const subscription = stripe.subscription || {};
+  const payment = stripe.payment_intent || {};
+  const charge = stripe.charge || {};
+
+  function formatDate(ts) {
+    if (!ts) return "-";
+    return new Date(ts * 1000).toLocaleString();
+  }
+
+  container.innerHTML = `
+
+<button id="btnVolverVentas" class="view-tab">
+← Volver a ventas
+</button>
+
+<div style="
+margin-top:25px;
+display:grid;
+gap:20px;
+">
+
+<!-- ============================= -->
+<!-- DATOS CONTRATO -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:linear-gradient(135deg,#0f172a,#1e293b);
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h2 style="margin-bottom:15px;">📄 Contrato</h2>
+
+<div><strong>ID venta:</strong> ${s.id}</div>
+<div><strong>Fecha contratación:</strong> ${new Date(s.created_at).toLocaleString()}</div>
+<div><strong>Servicio:</strong> ${s.service_type || "-"}</div>
+<div><strong>Precio mensual:</strong> ${s.monthly_price} €</div>
+<div><strong>Comisión:</strong> ${s.commission_percentage}%</div>
+
+</div>
+
+<!-- ============================= -->
+<!-- CLOSER -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:#0f172a;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3>👤 Closer</h3>
+
+<div><strong>Nombre:</strong> ${s.username || "Administrador"}</div>
+<div><strong>Activo actualmente:</strong> ${s.is_active ? "Sí" : "No"}</div>
+<div><strong>Fecha inicio comisión:</strong> ${s.commission_start_at ? new Date(s.commission_start_at).toLocaleDateString() : "-"}</div>
+
+</div>
+
+<!-- ============================= -->
+<!-- RESTAURANTE -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:#0f172a;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3>🏪 Restaurante</h3>
+
+<div><strong>Nombre:</strong> ${s.restaurant_name || "-"}</div>
+<div><strong>Ciudad:</strong> ${s.restaurant_city || "-"}</div>
+<div><strong>CP:</strong> ${s.restaurant_cp || "-"}</div>
+
+<div><strong>Google rating:</strong> ${s.google_rating || "-"}</div>
+<div><strong>Reviews:</strong> ${s.google_reviews || "-"}</div>
+
+</div>
+
+<!-- ============================= -->
+<!-- ESTADO COMERCIAL -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:#0f172a;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3>📊 Estado comercial</h3>
+
+<div><strong>Suscripción:</strong> ${s.subscription_status}</div>
+<div><strong>Refund total:</strong> ${s.is_fully_refunded ? "Sí" : "No"}</div>
+<div><strong>Importe devuelto:</strong> ${s.refund_amount || 0} €</div>
+
+</div>
+
+<!-- ============================= -->
+<!-- STRIPE -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:#0f172a;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3>💳 Stripe</h3>
+
+<div><strong>Subscription ID:</strong> ${s.stripe_subscription_id || "-"}</div>
+<div><strong>Payment Intent:</strong> ${s.stripe_payment_intent_id || "-"}</div>
+<div><strong>Charge:</strong> ${s.stripe_charge_id || "-"}</div>
+
+<div style="margin-top:10px;"></div>
+
+<div><strong>Estado real:</strong> ${subscription.status || "-"}</div>
+<div><strong>Inicio periodo:</strong> ${formatDate(subscription.current_period_start)}</div>
+<div><strong>Fin periodo:</strong> ${formatDate(subscription.current_period_end)}</div>
+
+<div><strong>Cancelación programada:</strong> ${subscription.cancel_at ? formatDate(subscription.cancel_at) : "-"}</div>
+<div><strong>Cancel at period end:</strong> ${subscription.cancel_at_period_end ? "Sí" : "No"}</div>
+
+</div>
+
+<!-- ============================= -->
+<!-- PAGOS -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:#0f172a;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3>💰 Pago</h3>
+
+<div><strong>Payment intent status:</strong> ${payment.status || "-"}</div>
+<div><strong>Importe recibido:</strong> ${payment.amount_received ? payment.amount_received/100 + " €" : "-"}</div>
+
+<div><strong>Refunds:</strong> ${charge.amount_refunded ? charge.amount_refunded/100 + " €" : "0 €"}</div>
+
+${charge.receipt_url ? `<a href="${charge.receipt_url}" target="_blank">Ver recibo</a>` : ""}
+
+</div>
+
+<!-- ============================= -->
+<!-- FACTURAS -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:#0f172a;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3>🧾 Facturas Stripe</h3>
+
+${
+  stripe.invoices && stripe.invoices.length
+    ? stripe.invoices.map((inv,i)=>`
+
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+margin-bottom:10px;
+padding:10px;
+border-radius:10px;
+background:#020617;
+">
+
+<div>
+
+<div><strong>Factura ${i+1}</strong></div>
+
+<div style="font-size:12px;opacity:0.7;">
+${new Date(inv.created*1000).toLocaleDateString()}  
+${inv.amount_paid/100} €
+</div>
+
+</div>
+
+<div style="display:flex;gap:10px">
+
+<a href="${inv.hosted_invoice_url}" target="_blank"
+style="
+padding:6px 10px;
+border-radius:8px;
+background:#2563eb;
+color:#fff;
+text-decoration:none;
+font-size:12px;
+">
+Ver
+</a>
+
+<a href="${inv.invoice_pdf}" target="_blank"
+style="
+padding:6px 10px;
+border-radius:8px;
+background:#16a34a;
+color:#fff;
+text-decoration:none;
+font-size:12px;
+">
+Descargar
+</a>
+
+</div>
+
+</div>
+
+`).join("")
+    : `<div>No hay facturas todavía</div>`
+}
+
+</div>
+
+<!-- ============================= -->
+<!-- TIMELINE -->
+<!-- ============================= -->
+
+<div style="
+padding:22px;
+border-radius:16px;
+background:#020617;
+border:1px solid rgba(255,255,255,0.08);
+">
+
+<h3>📜 Timeline cliente</h3>
+
+<div>🟢 Venta creada — ${new Date(s.created_at).toLocaleString()}</div>
+
+${payment.status ? `<div>💳 Primer pago confirmado</div>` : ""}
+
+${subscription.status === "active" ? `<div>🔁 Suscripción activa</div>` : ""}
+
+${subscription.cancel_at_period_end ? `<div>⚠ Cancelación programada</div>` : ""}
+
+${s.is_fully_refunded ? `<div>💸 Venta reembolsada</div>` : ""}
+
+</div>
+
+</div>
+`;
+
+  document.getElementById("btnVolverVentas").onclick = () => {
+    loadSection("ventas");
+  };
+
+}
   });
 }
 
