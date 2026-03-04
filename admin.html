@@ -354,6 +354,56 @@ async function loadSection(section) {
 <!-- CONTENEDOR ANUAL -->
 <div id="annualContainer" style="display:none; margin-top:25px;"></div>
 
+<!-- ====================================== -->
+<!-- 📊 COMPARATIVA AVANZADA -->
+<!-- ====================================== -->
+
+<div id="comparisonWrapper" style="margin-top:25px; display:none;">
+
+  <button id="btnToggleComparison" class="view-tab">
+    📊 Comparativa avanzada
+  </button>
+
+  <div id="comparisonPanel" style="
+    display:none;
+    margin-top:15px;
+    padding:20px;
+    border-radius:16px;
+    background:linear-gradient(135deg,#0f172a,#1e293b);
+    border:1px solid rgba(255,255,255,0.08);
+  ">
+
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;">
+
+      <select id="compareMonthA"></select>
+      <select id="compareYearA"></select>
+
+      <select id="compareMonthB"></select>
+      <select id="compareYearB"></select>
+
+      <select id="compareCloser">
+        <option value="">Todos los closers</option>
+      </select>
+
+      <button id="btnExecuteComparison" style="
+        background:linear-gradient(90deg,#2563eb,#3b82f6);
+        border:none;
+        border-radius:10px;
+        font-weight:600;
+        cursor:pointer;
+        color:#fff;
+        padding:8px;
+      ">
+        Comparar
+      </button>
+
+    </div>
+
+    <div id="comparisonResult" style="margin-top:25px;"></div>
+
+  </div>
+</div>
+
       <!-- TABLA -->
       <div style="overflow-x:auto;">
         <table class="ventas-table">
@@ -1188,6 +1238,7 @@ document.querySelectorAll("#ventasViewTabs button").forEach(btn => {
     sessionStorage.setItem("ventasActiveTab", currentViewMode);
 
     cargarVentas();
+    initComparisonControls();
   };
 
 });
@@ -1220,6 +1271,8 @@ document.getElementById("filtroYear").value = "";
 });
 
 cargarVentas();
+
+initComparisonControls();
 
 }
 
@@ -1614,6 +1667,179 @@ function renderTabla(ventas) {
 
     tbody.appendChild(row);
   });
+}
+
+// ======================================
+// 📊 EJECUTAR COMPARATIVA
+// ======================================
+
+async function executeComparison() {
+
+  const monthA = document.getElementById("compareMonthA").value;
+  const yearA = document.getElementById("compareYearA").value;
+  const monthB = document.getElementById("compareMonthB").value;
+  const yearB = document.getElementById("compareYearB").value;
+  const closer = document.getElementById("compareCloser").value;
+
+  let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=closers`
+
+  url += `&monthA=${monthA}&yearA=${yearA}`;
+  url += `&monthB=${monthB}&yearB=${yearB}`;
+
+  if (closer) url += `&closer_id=${closer}`;
+
+  try {
+
+    const res = await fetch(url);
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("Error en comparativa");
+      return;
+    }
+
+    renderComparisonResult(data.comparison);
+
+  } catch {
+    alert("Error servidor comparativa");
+  }
+}
+
+function renderComparisonResult(result) {
+
+  const container = document.getElementById("comparisonResult");
+
+  if (!result) {
+    container.innerHTML = "<div>Sin datos para comparar</div>";
+    return;
+  }
+
+  const growthColor = (v) => {
+    if (v > 0) return "#22c55e";
+    if (v < 0) return "#ef4444";
+    return "#9ca3af";
+  };
+
+  container.innerHTML = `
+    <div style="
+      padding:20px;
+      border-radius:14px;
+      background:#0f172a;
+      border:1px solid rgba(255,255,255,0.08);
+    ">
+
+      <div style="font-weight:800;margin-bottom:15px;">
+        Resultado comparativa
+      </div>
+
+      <div>Ventas A: <strong>${result.periodA.total_sales}</strong></div>
+      <div>Ventas B: <strong>${result.periodB.total_sales}</strong></div>
+      <div style="color:${growthColor(result.growth.sales_growth_percentage)}">
+        Variación ventas: ${result.growth.sales_growth_percentage}%
+      </div>
+
+      <br>
+
+      <div>Facturación A: <strong>${Number(result.periodA.total_revenue).toFixed(2)} €</strong></div>
+      <div>Facturación B: <strong>${Number(result.periodB.total_revenue).toFixed(2)} €</strong></div>
+      <div style="color:${growthColor(result.growth.revenue_growth_percentage)}">
+        Variación facturación: ${result.growth.revenue_growth_percentage}%
+      </div>
+
+      <br>
+
+      <div>Ticket medio A: <strong>${Number(result.periodA.avg_ticket).toFixed(2)} €</strong></div>
+      <div>Ticket medio B: <strong>${Number(result.periodB.avg_ticket).toFixed(2)} €</strong></div>
+      <div style="color:${growthColor(result.growth.ticket_growth_percentage)}">
+        Variación ticket: ${result.growth.ticket_growth_percentage}%
+      </div>
+
+    </div>
+  `;
+}
+
+// ======================================
+// 📊 COMPARATIVA AVANZADA CONTROLES
+// ======================================
+
+function initComparisonControls() {
+
+  const wrapper = document.getElementById("comparisonWrapper");
+
+  if (currentViewMode !== "closers") {
+    wrapper.style.display = "none";
+    return;
+  }
+
+  wrapper.style.display = "block";
+
+  const toggleBtn = document.getElementById("btnToggleComparison");
+  const panel = document.getElementById("comparisonPanel");
+
+  toggleBtn.onclick = () => {
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+  };
+
+  const months = [
+    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
+    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+  ];
+
+  const monthA = document.getElementById("compareMonthA");
+  const monthB = document.getElementById("compareMonthB");
+  const yearA = document.getElementById("compareYearA");
+  const yearB = document.getElementById("compareYearB");
+  const closerSelect = document.getElementById("compareCloser");
+
+  monthA.innerHTML = "";
+  monthB.innerHTML = "";
+
+  months.forEach((m,i) => {
+    const optA = document.createElement("option");
+    optA.value = i+1;
+    optA.textContent = m;
+    monthA.appendChild(optA);
+
+    const optB = document.createElement("option");
+    optB.value = i+1;
+    optB.textContent = m;
+    monthB.appendChild(optB);
+  });
+
+  const currentYear = new Date().getFullYear();
+
+  yearA.innerHTML = "";
+  yearB.innerHTML = "";
+
+  for (let y = currentYear; y >= 2023; y--) {
+    const opt1 = document.createElement("option");
+    opt1.value = y;
+    opt1.textContent = y;
+    yearA.appendChild(opt1);
+
+    const opt2 = document.createElement("option");
+    opt2.value = y;
+    opt2.textContent = y;
+    yearB.appendChild(opt2);
+  }
+
+  fetch("https://stripe-backend-h1z1.vercel.app/api/list-closers")
+    .then(res => res.json())
+    .then(closers => {
+
+      closerSelect.innerHTML = `<option value="">Todos los closers</option>`;
+
+      closers.forEach(c => {
+        const opt = document.createElement("option");
+        opt.value = c.id;
+        opt.textContent = c.username;
+        closerSelect.appendChild(opt);
+      });
+
+    });
+
+  document.getElementById("btnExecuteComparison").onclick = executeComparison;
+
 }
 
 // ======================================
