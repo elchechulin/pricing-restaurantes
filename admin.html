@@ -1363,7 +1363,7 @@ function renderKPIs(kpis) {
 
   const container = document.getElementById("ventasKPIs");
 
-  container.innerHTML = `
+ container.innerHTML = `
   <div class="kpi-main">
     <div class="kpi-main-title">🔥 Nuevas ventas este mes</div>
     <div class="kpi-main-number">
@@ -1388,6 +1388,11 @@ function renderKPIs(kpis) {
   </div>
 
   <div class="kpi-card">
+    <div>MRR</div>
+    <strong>${Number(kpis.mrr).toFixed(2)} €</strong>
+  </div>
+
+  <div class="kpi-card">
     <div>Total ventas</div>
     <strong>${kpis.total_sales}</strong>
   </div>
@@ -1400,6 +1405,16 @@ function renderKPIs(kpis) {
   <div class="kpi-card">
     <div>Comisiones</div>
     <strong>${Number(kpis.total_commissions).toFixed(2)} €</strong>
+  </div>
+
+  <div class="kpi-card">
+    <div>Beneficio bruto</div>
+    <strong>${Number(kpis.gross_profit).toFixed(2)} €</strong>
+  </div>
+
+  <div class="kpi-card">
+    <div>Margen</div>
+    <strong>${Number(kpis.margin_percentage).toFixed(1)} %</strong>
   </div>
 
   <div class="kpi-card">
