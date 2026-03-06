@@ -645,9 +645,10 @@ function initAltaCloser() {
         </div>
       `;
 
-      setTimeout(() => {
-        resultado.style.display = "none";
-      }, 3600000);
+      
+        setTimeout(() => {
+  resultado.style.display = "none";
+}, 3600000);
 
     } catch {
       resultado.style.display = "block";
@@ -1258,6 +1259,13 @@ if (closerAbiertoId === closer.id) {
 async function initVentasSection() {
 
   const selectMes = document.getElementById("filtroMes");
+  
+  // Inicializar filtros al mes actual
+const now = new Date();
+
+document.getElementById("filtroMes").value = now.getMonth() + 1;
+document.getElementById("filtroYear").value = now.getFullYear();
+  
   // 🔹 RECUPERAR TAB GUARDADA EN SESSION
 const savedTab = sessionStorage.getItem("ventasActiveTab");
 
@@ -1689,96 +1697,171 @@ function renderMonthlyRanking(ranking) {
 
   const container = document.getElementById("ventasKPIs");
 
+  const currentMonthFilter = document.getElementById("filtroMes").value;
+  const currentYearFilter = document.getElementById("filtroYear").value;
+
   const now = new Date();
-  const monthName = now.toLocaleString("es-ES", { month: "long" });
-  const year = now.getFullYear();
-
-  // 🔒 Si no hay ventas este mes
-  if (!ranking || ranking.length === 0) {
-
-    container.innerHTML += `
-      <div style="margin-top:30px;margin-bottom:20px;opacity:0.6;">
-        <div style="font-size:18px;font-weight:800;margin-bottom:10px;">
-          🏆 Ranking mensual · ${monthName} ${year}
-        </div>
-        <div style="
-          padding:20px;
-          border-radius:12px;
-          background:#0f172a;
-          text-align:center;
-          font-weight:600;
-        ">
-          Sin ventas registradas este mes
-        </div>
-      </div>
-    `;
-
-    return;
-  }
-
-  // 🔢 Calcular total mensual
-  const totalMonthRevenue = ranking.reduce(
-    (acc, r) => acc + Number(r.monthly_revenue),
-    0
-  );
+  const currentMonth = now.getMonth() + 1;
+  const currentYear = now.getFullYear();
 
   let html = `
-    <div style="margin-top:30px;margin-bottom:20px;">
-      <div style="font-size:18px;font-weight:800;margin-bottom:15px;">
-        🏆 Ranking mensual · ${monthName} ${year}
-      </div>
-  `;
+<div style="margin-top:30px;margin-bottom:20px;">
 
-  ranking.forEach(r => {
+<div style="
+display:flex;
+align-items:center;
+justify-content:space-between;
+margin-bottom:15px;
+">
 
-    let medal = "";
-    if (r.position === 1) medal = "🥇";
-    if (r.position === 2) medal = "🥈";
-    if (r.position === 3) medal = "🥉";
+<div style="font-size:18px;font-weight:800;">
+🏆 Ranking mensual
+</div>
 
-    const contribution = totalMonthRevenue > 0
-      ? ((r.monthly_revenue / totalMonthRevenue) * 100).toFixed(1)
-      : 0;
+<div style="display:flex;gap:8px;">
+
+<select id="rankingMonthSelect" style="
+padding:6px 8px;
+border-radius:8px;
+background:#020617;
+color:#fff;
+border:1px solid rgba(255,120,0,0.4);
+font-size:12px;
+">
+
+<option value="1">Enero</option>
+<option value="2">Febrero</option>
+<option value="3">Marzo</option>
+<option value="4">Abril</option>
+<option value="5">Mayo</option>
+<option value="6">Junio</option>
+<option value="7">Julio</option>
+<option value="8">Agosto</option>
+<option value="9">Septiembre</option>
+<option value="10">Octubre</option>
+<option value="11">Noviembre</option>
+<option value="12">Diciembre</option>
+
+</select>
+
+<select id="rankingYearSelect" style="
+padding:6px 8px;
+border-radius:8px;
+background:#020617;
+color:#fff;
+border:1px solid rgba(255,120,0,0.4);
+font-size:12px;
+">
+</select>
+
+</div>
+
+</div>
+`;
+
+  if (!ranking || ranking.length === 0) {
 
     html += `
-      <div style="
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-        padding:14px 18px;
-        margin-bottom:12px;
-        border-radius:14px;
-        background:${r.position === 1 
-          ? "linear-gradient(90deg,#3b2f00,#5b4500)"
-          : r.position === 2
-          ? "linear-gradient(90deg,#2e2e2e,#4a4a4a)"
-          : r.position === 3
-          ? "linear-gradient(90deg,#3a1f00,#5a3000)"
-          : "#0f172a"};
-        ${r.position === 1 ? "animation: pulseTop 2s infinite;" : ""}
-      ">
+<div style="
+padding:20px;
+border-radius:12px;
+background:#0f172a;
+text-align:center;
+font-weight:600;
+opacity:0.7;
+">
+Sin ventas registradas en este periodo
+</div>
+`;
 
-        <div style="font-weight:700;">
-          ${medal} ${r.position}. ${r.username}
-        </div>
+  } else {
 
-        <div style="font-size:13px;text-align:right;">
-          <div><strong>${Number(r.monthly_revenue).toFixed(2)} €</strong></div>
-          <div style="opacity:0.7;">
-            ${r.monthly_sales} ventas
-          </div>
-          <div style="opacity:0.6;font-size:12px;">
-            ${contribution}% del mes
-          </div>
-        </div>
+    const totalMonthRevenue = ranking.reduce(
+      (acc, r) => acc + Number(r.monthly_revenue),
+      0
+    );
 
-      </div>
-    `;
-  });
+    ranking.forEach(r => {
+
+      let medal = "";
+      if (r.position === 1) medal = "🥇";
+      if (r.position === 2) medal = "🥈";
+      if (r.position === 3) medal = "🥉";
+
+      const contribution = totalMonthRevenue > 0
+        ? ((r.monthly_revenue / totalMonthRevenue) * 100).toFixed(1)
+        : 0;
+
+      html += `
+<div style="
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:14px 18px;
+margin-bottom:12px;
+border-radius:14px;
+background:${r.position === 1 
+  ? "linear-gradient(90deg,#3b2f00,#5b4500)"
+  : r.position === 2
+  ? "linear-gradient(90deg,#2e2e2e,#4a4a4a)"
+  : r.position === 3
+  ? "linear-gradient(90deg,#3a1f00,#5a3000)"
+  : "#0f172a"};
+${r.position === 1 ? "animation: pulseTop 2s infinite;" : ""}
+">
+
+<div style="font-weight:700;">
+${medal} ${r.position}. ${r.username}
+</div>
+
+<div style="font-size:13px;text-align:right;">
+<div><strong>${Number(r.monthly_revenue).toFixed(2)} €</strong></div>
+<div style="opacity:0.7;">
+${r.monthly_sales} ventas
+</div>
+<div style="opacity:0.6;font-size:12px;">
+${contribution}% del mes
+</div>
+</div>
+
+</div>
+`;
+    });
+
+  }
 
   html += `</div>`;
 
   container.innerHTML += html;
+
+  const monthSelect = document.getElementById("rankingMonthSelect");
+  const yearSelect = document.getElementById("rankingYearSelect");
+
+  if (!monthSelect || !yearSelect) return;
+
+  monthSelect.value = currentMonthFilter || currentMonth;
+
+  for (let y = currentYear; y >= 2023; y--) {
+    const opt = document.createElement("option");
+    opt.value = y;
+    opt.textContent = y;
+    yearSelect.appendChild(opt);
+  }
+
+  yearSelect.value = currentYearFilter || currentYear;
+
+  monthSelect.onchange = () => {
+    document.getElementById("filtroMes").value = monthSelect.value;
+    document.getElementById("filtroYear").value = yearSelect.value;
+    cargarVentas();
+  };
+
+  yearSelect.onchange = () => {
+    document.getElementById("filtroMes").value = monthSelect.value;
+    document.getElementById("filtroYear").value = yearSelect.value;
+    cargarVentas();
+  };
+
 }
 
 // ===============================
