@@ -1263,7 +1263,7 @@ th, td {
 }
 
 tbody tr {
-  border-bottom: 1px solid rgba(255,120,0,0.2);
+  border-bottom: 1px solid rgba(255,120,0,0.12);
 }
 
 tbody tr:last-child {
@@ -1305,8 +1305,37 @@ tbody tr:last-child {
   margin-top: 30px;
 }
 
+/* HEADER TABLA VENTAS · PREMIUM */
+
 .ventas-table thead {
-  background: rgba(255,80,0,0.25);
+
+  background: linear-gradient(
+    90deg,
+    #7a1e00,
+    #9c2a00,
+    #7a1e00
+  );
+
+  border-bottom: 1px solid rgba(255,140,0,0.35);
+
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,0.08),
+    0 6px 16px rgba(0,0,0,0.45);
+
+}
+
+.ventas-table thead th {
+
+  color: #ffe7d6;
+
+  font-size: 12.5px;
+
+  letter-spacing: 0.6px;
+
+  font-weight: 700;
+
+  text-transform: uppercase;
+
 }
 
 .ventas-table th {
