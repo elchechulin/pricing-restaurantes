@@ -1294,6 +1294,8 @@ async function cargarVentasQuick(commission) {
     }
 
     renderKPIs(data.kpis);
+renderForecast(data.forecast);
+renderServiceDistribution(data.service_distribution);
 
 if (currentViewMode === "closers") {
   renderCloserKPIs(data.closer_kpis);
@@ -1333,6 +1335,8 @@ let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${v
     }
 
     renderKPIs(data.kpis);
+renderForecast(data.forecast);
+renderServiceDistribution(data.service_distribution);
 
 const annualWrapper = document.getElementById("annualToggleWrapper");
 
@@ -1422,6 +1426,80 @@ function renderKPIs(kpis) {
     <strong>${Number(kpis.avg_ticket).toFixed(2)} €</strong>
   </div>
 `;
+}
+
+function renderServiceDistribution(distribution) {
+
+  if (!distribution || !distribution.length) return;
+
+  const container = document.getElementById("ventasKPIs");
+
+  let html = `
+    <div style="
+      margin-top:30px;
+      padding:22px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#0f172a,#1e293b);
+      border:1px solid rgba(255,255,255,0.08);
+    ">
+
+      <div style="
+        font-size:18px;
+        font-weight:800;
+        margin-bottom:20px;
+      ">
+        📊 Distribución por tipo de servicio
+      </div>
+  `;
+
+  distribution.forEach(s => {
+
+    const percent = Number(s.revenue_percentage).toFixed(1);
+
+    html += `
+      <div style="margin-bottom:18px;">
+
+        <div style="
+          display:flex;
+          justify-content:space-between;
+          margin-bottom:6px;
+          font-weight:600;
+        ">
+          <span>${s.service_type || "Sin clasificar"}</span>
+          <span>${percent}%</span>
+        </div>
+
+        <div style="
+          width:100%;
+          height:10px;
+          background:#020617;
+          border-radius:6px;
+          overflow:hidden;
+        ">
+
+          <div style="
+            width:${percent}%;
+            height:100%;
+            background:linear-gradient(90deg,#ff3b00,#ff6a00);
+          "></div>
+
+        </div>
+
+        <div style="
+          font-size:12px;
+          opacity:0.7;
+          margin-top:4px;
+        ">
+          ${s.total_sales} ventas · ${Number(s.total_revenue).toFixed(2)} €
+        </div>
+
+      </div>
+    `;
+  });
+
+  html += `</div>`;
+
+  container.innerHTML += html;
 }
 
 function renderCloserKPIs(closers) {
@@ -1651,6 +1729,75 @@ function renderYTD(ytd) {
   `;
 
   container.innerHTML += html;
+}
+
+// ===============================
+// 📈 FORECAST MES ACTUAL
+// ===============================
+
+function renderForecast(forecast) {
+
+  if (!forecast) return;
+
+  const container = document.getElementById("ventasKPIs");
+
+  const html = `
+    <div style="
+      margin-top:30px;
+      padding:22px;
+      border-radius:16px;
+      background:linear-gradient(135deg,#020617,#0f172a);
+      border:1px solid rgba(255,255,255,0.08);
+    ">
+
+      <div style="
+        font-size:18px;
+        font-weight:800;
+        margin-bottom:15px;
+      ">
+        📈 Proyección cierre de mes
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+        gap:18px;
+      ">
+
+        <div>
+          <div style="opacity:0.7;font-size:13px;">
+            Facturación proyectada
+          </div>
+          <div style="font-size:22px;font-weight:700;">
+            ${Number(forecast.projected_revenue).toFixed(2)} €
+          </div>
+        </div>
+
+        <div>
+          <div style="opacity:0.7;font-size:13px;">
+            Ventas estimadas
+          </div>
+          <div style="font-size:22px;font-weight:700;">
+            ${Number(forecast.projected_sales).toFixed(1)}
+          </div>
+        </div>
+
+        <div>
+          <div style="opacity:0.7;font-size:13px;">
+            Promedio diario
+          </div>
+          <div style="font-size:22px;font-weight:700;">
+            ${Number(forecast.daily_average).toFixed(2)} €
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  `;
+
+  container.innerHTML += html;
+
 }
 
 function renderTabla(ventas) {
