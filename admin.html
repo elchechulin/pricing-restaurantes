@@ -140,6 +140,92 @@
   100% { box-shadow: 0 0 0px rgba(0,200,255,0.0); }
 }
 
+/* =========================
+BADGE SERVICIO (REFUERZO)
+========================= */
+
+.badge-medium{
+background:#1e3a8a;
+color:#93c5fd;
+}
+
+.badge-low{
+background:#1e293b;
+color:#94a3b8;
+}
+
+.badge-high{
+background:#7c2d12;
+color:#fb923c;
+}
+
+/* =========================
+BADGES TABLA VENTAS
+========================= */
+
+.badge-status{
+padding:4px 10px;
+border-radius:10px;
+font-size:12px;
+font-weight:600;
+}
+
+.badge-active{
+background:#052e16;
+color:#22c55e;
+border:1px solid rgba(34,197,94,0.4);
+}
+
+.badge-cancel{
+background:#3f1d1d;
+color:#ef4444;
+border:1px solid rgba(239,68,68,0.4);
+}
+
+.badge-other{
+background:#1e293b;
+color:#cbd5f5;
+}
+
+/* =========================
+BADGE SERVICIO
+========================= */
+
+.badge-service{
+padding:4px 8px;
+border-radius:8px;
+font-size:12px;
+font-weight:600;
+}
+
+.badge-low{
+background:#1e293b;
+color:#94a3b8;
+}
+
+.badge-medium{
+background:#1e3a8a;
+color:#93c5fd;
+}
+
+.badge-high{
+background:#7c2d12;
+color:#fb923c;
+}
+
+/* =========================
+COMISIONES
+========================= */
+
+.commission-amount{
+font-weight:700;
+}
+
+.commission-percent{
+font-size:12px;
+opacity:0.7;
+}
+
   </style>
 </head>
 
@@ -1853,18 +1939,47 @@ function renderTabla(ventas) {
     row.style.cursor = "pointer";
 row.onclick = () => abrirDetalleVenta(v.id);
 
-    row.innerHTML = `
-  <td>${new Date(v.created_at).toLocaleDateString()}</td>
-  <td>${v.username || "-"}</td>
-  <td>${v.service_type}</td>
-  <td>${v.monthly_price} €</td>
- <td>
+    // ===== BADGES VISUALES =====
+
+let estadoBadge = "";
+if (v.subscription_status === "active") {
+  estadoBadge = `<span class="badge-status badge-active">Activo</span>`;
+} else if (v.subscription_status === "canceled") {
+  estadoBadge = `<span class="badge-status badge-cancel">Cancelado</span>`;
+} else {
+  estadoBadge = `<span class="badge-status badge-other">${v.subscription_status}</span>`;
+}
+
+// ===== NORMALIZAR SERVICIO =====
+const serviceType = (v.service_type || "").toLowerCase();
+const serviceLabel = serviceType.charAt(0).toUpperCase() + serviceType.slice(1);
+
+let serviceBadge = `<span class="badge-service badge-${serviceType}">
+${serviceLabel}
+</span>`;
+
+// ===== RENDER FILA =====
+
+row.innerHTML = `
+<td>${new Date(v.created_at).toLocaleDateString()}</td>
+
+<td>${v.username || "-"}</td>
+
+<td>${serviceBadge}</td>
+
+<td>${v.monthly_price} €</td>
+
+<td>
+  <span class="commission-amount">
   ${(v.monthly_price * v.commission_percentage / 100).toFixed(2)} €
-  <div style="font-size:12px;opacity:0.7;">
-    (${v.commission_percentage}%${v.username === "Administrador" ? " Admin" : ""})
+  </span>
+
+  <div class="commission-percent">
+  ${v.commission_percentage}%${v.username === "Administrador" ? " Admin" : ""}
   </div>
 </td>
-  <td>${v.subscription_status}</td>
+
+<td>${estadoBadge}</td>
 `;
 
     tbody.appendChild(row);
