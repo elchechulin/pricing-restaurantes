@@ -1462,6 +1462,22 @@ tbody tr:last-child {
   border-bottom: 1px solid rgba(255,120,0,0.15);
 }
 
+/* ===========================================
+   CLOSER NAME + ID
+=========================================== */
+
+.closer-name {
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.closer-id {
+  font-size: 11px;
+  opacity: 0.65;
+  margin-top: 2px;
+  letter-spacing: 0.3px;
+}
+
 /* ===================================================
    BADGES PROFESIONALES
 =================================================== */
@@ -1565,4 +1581,20 @@ html {
 
 body {
   -webkit-tap-highlight-color: transparent;
+}
+
+/* ===========================================
+   TITULOS FILTROS VENTAS
+=========================================== */
+
+.filtro-group{
+  width:100%;
+}
+
+.filtro-title{
+  font-size:12px;
+  font-weight:600;
+  margin-bottom:6px;
+  opacity:0.75;
+  padding-left:4px;
 }

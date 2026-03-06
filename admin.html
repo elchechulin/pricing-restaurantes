@@ -411,24 +411,36 @@ async function loadSection(section) {
 </div>
 
       <!-- FILTROS -->
-      <div class="ventas-filtros">
+<div class="ventas-filtros">
 
-        <select id="filtroView">
-          <option value="active">Activos</option>
-          <option value="disabled">Desactivados</option>
-        </select>
+  <div class="filtro-group">
+    <div class="filtro-title">Estado de ventas</div>
+    <select id="filtroView">
+      <option value="active">Activos</option>
+      <option value="disabled">Desactivados</option>
+    </select>
+  </div>
 
-        <select id="filtroMes"></select>
+  <div class="filtro-group">
+    <div class="filtro-title">Mes</div>
+    <select id="filtroMes"></select>
+  </div>
 
-        <select id="filtroYear"></select>
+  <div class="filtro-group">
+    <div class="filtro-title">Año</div>
+    <select id="filtroYear"></select>
+  </div>
 
-        <select id="filtroCloser">
-          <option value="">Todos los closers</option>
-        </select>
+  <div class="filtro-group">
+    <div class="filtro-title">Closer</div>
+    <select id="filtroCloser">
+      <option value="">Todos los closers</option>
+    </select>
+  </div>
 
-        <button id="btnFiltrarVentas">Filtrar</button>
+  <button id="btnFiltrarVentas">Filtrar</button>
 
-      </div>
+</div>
 
       <!-- KPIs -->
 <div id="ventasKPIs"></div>
@@ -1967,7 +1979,17 @@ ${serviceLabel}
 row.innerHTML = `
 <td>${new Date(v.created_at).toLocaleDateString()}</td>
 
-<td>${v.username || "-"}</td>
+<td>
+  <div class="closer-name">
+    ${v.username || "-"}
+  </div>
+
+  ${
+    v.username !== "Administrador"
+      ? `<div class="closer-id">(ID ${v.closer_id || "—"})</div>`
+      : ""
+  }
+</td>
 
 <td>${serviceBadge}</td>
 
@@ -2075,7 +2097,7 @@ border:1px solid rgba(255,255,255,0.08);
 
 <h3>👤 Closer</h3>
 
-<div><strong>Nombre:</strong> ${s.username || "Administrador"}</div>
+<div><strong>Nombre:</strong> ${s.username || "Administrador"} (ID ${s.closer_id || "—"})</div>
 <div><strong>Activo actualmente:</strong> ${s.is_active ? "Sí" : "No"}</div>
 <div><strong>Fecha inicio comisión:</strong> ${s.commission_start_at ? new Date(s.commission_start_at).toLocaleDateString() : "-"}</div>
 
