@@ -1335,6 +1335,7 @@ let url = `https://stripe-backend-h1z1.vercel.app/api/health?type=sales&view=${v
     }
 
     renderKPIs(data.kpis);
+renderAlerts(data.alerts);
 renderForecast(data.forecast);
 renderServiceDistribution(data.service_distribution);
 
@@ -1426,6 +1427,41 @@ function renderKPIs(kpis) {
     <strong>${Number(kpis.avg_ticket).toFixed(2)} €</strong>
   </div>
 `;
+}
+
+function renderAlerts(alerts) {
+
+  if (!alerts || alerts.length === 0) return;
+
+  const container = document.getElementById("ventasKPIs");
+
+  let html = `
+    <div style="
+      margin-bottom:25px;
+      padding:18px;
+      border-radius:14px;
+      background:linear-gradient(135deg,#3f1d1d,#7f1d1d);
+      border:1px solid rgba(255,0,0,0.3);
+    ">
+      <div style="font-weight:800;margin-bottom:10px;">
+        🚨 Alertas estratégicas
+      </div>
+  `;
+
+  alerts.forEach(a => {
+
+    html += `
+      <div style="margin-bottom:6px;">
+        ⚠ ${a.message}
+      </div>
+    `;
+
+  });
+
+  html += `</div>`;
+
+  container.innerHTML = html + container.innerHTML;
+
 }
 
 function renderServiceDistribution(distribution) {
